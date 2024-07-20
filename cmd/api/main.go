@@ -58,6 +58,7 @@ func main() {
 	flag.IntVar(&cfg.limiter.burst, "limiter-burst", 4, "Rate limiter maximum burst")
 	flag.BoolVar(&cfg.limiter.enabled, "limiter-enabled", true, "Enable rate limiter")
 
+	// re-enable with new defaults
 	// flag.StringVar(&cfg.smtp.host, "smtp-host", "sandbox.smtp.mailtrap.io", "SMTP host")
 	// flag.IntVar(&cfg.smtp.port, "smtp-port", 2525, "SMTP port")
 	// flag.StringVar(&cfg.smtp.username, "smtp-username", "6136cf491d04e3", "SMTP username")
@@ -66,7 +67,6 @@ func main() {
 
 	flag.Parse()
 
-	// logger := log.New(os.Stdout, "", log.Ldate|log.Ltime)
 	logger := jsonlog.New(os.Stdout, jsonlog.LevelInfo)
 
 	db, err := openDB(cfg)
