@@ -13,10 +13,9 @@ import (
 type User struct {
 	ID        int64     `json:"id"`
 	CreatedAt time.Time `json:"created_at"`
-	Name      string    `json:"name"`
+	Username  string    `json:"username"`
 	Email     string    `json:"email"`
 	Password  password  `json:"-"`
-	Activated bool      `json:"activated"`
 	Version   int       `json:"-"`
 }
 
@@ -64,8 +63,8 @@ func ValidatePasswordPlaintext(v *validator.Validator, password string) {
 }
 
 func ValidateUser(v *validator.Validator, user *User) {
-	v.Check(user.Name != "", "name", "must be provided")
-	v.Check(len(user.Name) <= 500, "name", "must not be more than 500 bytes long")
+	v.Check(user.Username != "", "name", "must be provided")
+	v.Check(len(user.Username) <= 500, "name", "must not be more than 500 bytes long")
 
 	if user.Password.plaintext != nil {
 		ValidatePasswordPlaintext(v, *user.Password.plaintext)
@@ -84,7 +83,7 @@ type UserModel struct {
 	DB *sql.DB
 }
 
-type userModelInterface interface {
+type UserModelInterface interface {
 	Insert(*User) error
 	GetByEmail(string) (*User, error)
 	Update(*User) error
@@ -92,11 +91,11 @@ type userModelInterface interface {
 
 func (m UserModel) Insert(user *User) error {
 	query := `
-INSERT INTO users (name, email, password_hash, activated)
-VALUES ($1, $2, $3, $4)
+INSERT INTO users (name, email, password_hash)
+VALUES ($1, $2, $3)
 RETURNING id, created_at, version`
 
-	args := []any{user.Name, user.Email, user.Password.hash, user.Activated}
+	args := []any{user.Username, user.Email, user.Password.hash}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
@@ -116,7 +115,7 @@ RETURNING id, created_at, version`
 
 func (m UserModel) GetByEmail(email string) (*User, error) {
 	query := `
-SELECT id, created_at, name, email, password_hash, activated, version
+SELECT id, created_at, name, email, password_hash, version
 FROM users
 WHERE email = $1`
 	var user User
@@ -125,10 +124,9 @@ WHERE email = $1`
 	err := m.DB.QueryRowContext(ctx, query, email).Scan(
 		&user.ID,
 		&user.CreatedAt,
-		&user.Name,
+		&user.Username,
 		&user.Email,
 		&user.Password.hash,
-		&user.Activated,
 		&user.Version,
 	)
 	if err != nil {
@@ -145,14 +143,13 @@ WHERE email = $1`
 func (m UserModel) Update(user *User) error {
 	query := `
 UPDATE users
-SET name = $1, email = $2, password_hash = $3, activated = $4, version = version + 1
+SET name = $1, email = $2, password_hash = $3, version = version + 1
 WHERE id = $5 AND version = $6
 RETURNING version`
-	args := []interface{}{
-		user.Name,
+	args := []any{
+		user.Username,
 		user.Email,
 		user.Password.hash,
-		user.Activated,
 		user.ID,
 		user.Version,
 	}

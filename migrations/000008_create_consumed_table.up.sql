@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS consumed (
    alcohol DOUBLE PRECISION,
    consumed_at TIMESTAMP    ,
    created_at TIMESTAMP     DEFAULT current_timestamp,
-   last_edited_at TIMESTAMP ,
+   last_edited_at TIMESTAMP DEFAULT current_timestamp,
    notes TEXT
 );
 
