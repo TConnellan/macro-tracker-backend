@@ -9,31 +9,20 @@ import (
 )
 
 type Consumed struct {
-	ID           int64     `json:"id"`
-	UserID       int64     `json:"user_id"`
-	RecipeID     int64     `json:"recipe_id"`
-	Quantity     float64   `json:"quantity"`
-	Carbs        float64   `json:"carbs"`
-	Fats         float64   `json:"fats"`
-	Proteins     float64   `json:"proteins"`
-	Alcohol      float64   `json:"alcohol"`
-	ConsumedAt   time.Time `json:"consumed_at"`
-	CreatedAt    time.Time `json:"created_at"`
-	LastEditedAt time.Time `json:"last_edited_at"`
-	Notes        string    `json:"notes"`
-}
-
-func ValidateMacroNutrients(v *validator.Validator, consumed *Consumed) {
-	v.Check(consumed.Carbs >= 0, "carbs", "must be non-negative")
-	v.Check(consumed.Fats >= 0, "fats", "must be non-negative")
-	v.Check(consumed.Proteins >= 0, "proteins", "must be non-negative")
-	v.Check(consumed.Alcohol >= 0, "alcohol", "must be non-negative")
-	v.Check(consumed.Carbs+consumed.Fats+consumed.Proteins+consumed.Alcohol > 0, "macros", "one macronutrient must be non-negative")
+	ID           int64          `json:"id"`
+	UserID       int64          `json:"user_id"`
+	RecipeID     int64          `json:"recipe_id"`
+	Quantity     float64        `json:"quantity"`
+	Macros       Macronutrients `json:"macros"`
+	ConsumedAt   time.Time      `json:"consumed_at"`
+	CreatedAt    time.Time      `json:"created_at"`
+	LastEditedAt time.Time      `json:"last_edited_at"`
+	Notes        string         `json:"notes"`
 }
 
 func ValidateConsumed(v *validator.Validator, consumed *Consumed) {
 	v.Check(consumed.Quantity > 0, "quantity", "quantity must be positive")
-	ValidateMacroNutrients(v, consumed)
+	ValidateMacroNutrients(v, consumed.Macros)
 }
 
 type ConsumedModel struct {
@@ -63,10 +52,10 @@ func (m ConsumedModel) GetByConsumedID(ConsumedID int64) (*Consumed, error) {
 		&consumed.UserID,
 		&consumed.RecipeID,
 		&consumed.Quantity,
-		&consumed.Carbs,
-		&consumed.Fats,
-		&consumed.Proteins,
-		&consumed.Alcohol,
+		&consumed.Macros.Carbs,
+		&consumed.Macros.Fats,
+		&consumed.Macros.Proteins,
+		&consumed.Macros.Alcohol,
 		&consumed.ConsumedAt,
 		&consumed.CreatedAt,
 		&consumed.LastEditedAt,
@@ -101,10 +90,10 @@ func (m ConsumedModel) GetAllByUserID(userID int64) ([]*Consumed, error) {
 			&consumed.UserID,
 			&consumed.RecipeID,
 			&consumed.Quantity,
-			&consumed.Carbs,
-			&consumed.Fats,
-			&consumed.Proteins,
-			&consumed.Alcohol,
+			&consumed.Macros.Carbs,
+			&consumed.Macros.Fats,
+			&consumed.Macros.Proteins,
+			&consumed.Macros.Alcohol,
 			&consumed.ConsumedAt,
 			&consumed.CreatedAt,
 			&consumed.LastEditedAt,
@@ -153,10 +142,10 @@ func (m ConsumedModel) GetAllByUserIDAndDate(userID int64, from time.Time, to ti
 			&consumed.UserID,
 			&consumed.RecipeID,
 			&consumed.Quantity,
-			&consumed.Carbs,
-			&consumed.Fats,
-			&consumed.Proteins,
-			&consumed.Alcohol,
+			&consumed.Macros.Carbs,
+			&consumed.Macros.Fats,
+			&consumed.Macros.Proteins,
+			&consumed.Macros.Alcohol,
 			&consumed.ConsumedAt,
 			&consumed.CreatedAt,
 			&consumed.LastEditedAt,
@@ -195,10 +184,10 @@ func (m ConsumedModel) Insert(consumed *Consumed) error {
 		consumed.UserID,
 		consumed.RecipeID,
 		consumed.Quantity,
-		consumed.Carbs,
-		consumed.Fats,
-		consumed.Proteins,
-		consumed.Alcohol,
+		consumed.Macros.Carbs,
+		consumed.Macros.Fats,
+		consumed.Macros.Proteins,
+		consumed.Macros.Alcohol,
 		consumed.ConsumedAt,
 		consumed.LastEditedAt,
 	}
@@ -228,10 +217,10 @@ func (m ConsumedModel) Update(consumed *Consumed) error {
 		consumed.UserID,
 		consumed.RecipeID,
 		consumed.Quantity,
-		consumed.Carbs,
-		consumed.Fats,
-		consumed.Proteins,
-		consumed.Alcohol,
+		consumed.Macros.Carbs,
+		consumed.Macros.Fats,
+		consumed.Macros.Proteins,
+		consumed.Macros.Alcohol,
 		consumed.ConsumedAt,
 		consumed.Notes,
 		consumed.ID,
