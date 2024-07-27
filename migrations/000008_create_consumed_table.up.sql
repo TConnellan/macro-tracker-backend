@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS consumed (
    carbs DOUBLE PRECISION   ,
    fats DOUBLE PRECISION    ,
    proteins DOUBLE PRECISION,
+   alcohol DOUBLE PRECISION,
    consumed_at TIMESTAMP    ,
    created_at TIMESTAMP     DEFAULT current_timestamp,
    last_edited_at TIMESTAMP ,
