@@ -35,6 +35,7 @@ type ConsumerModelInterface interface {
 	GetAllByUserIDAndDate(int64, time.Time, time.Time) ([]*Consumed, error)
 	Insert(*Consumed) error
 	Update(*Consumed) error
+	Delete(int64) error
 }
 
 func (m ConsumedModel) GetByConsumedID(ConsumedID int64) (*Consumed, error) {
@@ -237,6 +238,30 @@ func (m ConsumedModel) Update(consumed *Consumed) error {
 	}
 
 	if rows == 0 {
+		return ErrRecordNotFound
+	}
+
+	return nil
+}
+
+func (m ConsumedModel) Delete(ID int64) error {
+	stmt := `DELETE FROM consumed
+	WHERE id = $1`
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	result, err := m.DB.ExecContext(ctx, stmt, ID)
+	if err != nil {
+		return err
+	}
+
+	rows, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if rows != 1 {
 		return ErrRecordNotFound
 	}
 
