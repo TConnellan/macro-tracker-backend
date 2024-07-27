@@ -29,7 +29,7 @@ type ConsumedModel struct {
 	DB *sql.DB
 }
 
-type ConsumerModelInterface interface {
+type ConsumedModelInterface interface {
 	GetByConsumedID(int64) (*Consumed, error)
 	GetAllByUserID(int64) ([]*Consumed, error)
 	GetAllByUserIDAndDate(int64, time.Time, time.Time) ([]*Consumed, error)
