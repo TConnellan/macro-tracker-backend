@@ -4,8 +4,8 @@ CREATE TABLE IF NOT EXISTS consumables (
    brand_name VARCHAR(50)   ,
    size DOUBLE PRECISION    ,
    units VARCHAR(10)        ,
-   carbohydrates DOUBLE PRECISION,
-   fat DOUBLE PRECISION    ,
-   protein  DOUBLE PRECISION,
+   carbs DOUBLE PRECISION,
+   fats DOUBLE PRECISION    ,
+   proteins  DOUBLE PRECISION,
    alcohol DOUBLE PRECISION
 );
