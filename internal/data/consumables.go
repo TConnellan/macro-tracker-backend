@@ -1,7 +1,10 @@
 package data
 
 import (
+	"context"
 	"database/sql"
+	"errors"
+	"time"
 
 	"github.com/tconnellan/macro-tracker-backend/internal/validator"
 )
@@ -64,4 +67,39 @@ type ConsumableModelInterface interface {
 	Insert(*Consumable) error
 	Update(*Consumable) error
 	Delete(int64) error
+}
+
+func (m *ConsumableModel) GetByID(ID int64) (*Consumable, error) {
+	stmt := `SELECT id, name, brand_name, size, units, carbs, fats, proteins, alcohol
+	FROM consumables
+	WHERE id = $1`
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	var consumable Consumable
+
+	err := m.DB.QueryRowContext(ctx, stmt, ID).Scan(
+		&consumable.ID,
+		&consumable.Name,
+		&consumable.BrandName,
+		&consumable.Size,
+		&consumable.Units,
+		&consumable.Macros.Carbs,
+		&consumable.Macros.Fats,
+		&consumable.Macros.Proteins,
+		&consumable.Macros.Proteins,
+	)
+
+	if err != nil {
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return nil, ErrRecordNotFound
+		default:
+			return nil, err
+		}
+
+	}
+
+	return &consumable, nil
 }

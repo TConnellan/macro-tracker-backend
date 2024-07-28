@@ -3,6 +3,7 @@ package data
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"time"
 
 	"github.com/tconnellan/macro-tracker-backend/internal/validator"
@@ -62,8 +63,14 @@ func (m ConsumedModel) GetByConsumedID(ConsumedID int64) (*Consumed, error) {
 		&consumed.LastEditedAt,
 		&consumed.Notes,
 	)
+
 	if err != nil {
-		return nil, err
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return nil, ErrRecordNotFound
+		default:
+			return nil, err
+		}
 	}
 
 	return consumed, nil

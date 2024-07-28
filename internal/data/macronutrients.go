@@ -17,6 +17,6 @@ func ValidateMacroNutrients(v *validator.Validator, macros Macronutrients) {
 	v.Check(macros.Carbs+macros.Fats+macros.Proteins+macros.Alcohol > 0, "macronutrients", "one macronutrient must be non-negative")
 }
 
-func (macros *Macronutrients) Kj() float64 {
+func (macros *Macronutrients) CalculateKJ() float64 {
 	return 16.7*macros.Carbs + 37.7*macros.Fats + 16.7*macros.Proteins + 29*macros.Alcohol
 }
