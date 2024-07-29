@@ -88,6 +88,7 @@ func (m ConsumedModel) GetAllByUserID(userID int64) ([]*Consumed, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 
 	var allConsumed []*Consumed
 
@@ -108,17 +109,9 @@ func (m ConsumedModel) GetAllByUserID(userID int64) ([]*Consumed, error) {
 			&consumed.Notes,
 		)
 		if err != nil {
-			break
+			return nil, err
 		}
 		allConsumed = append(allConsumed, &consumed)
-	}
-
-	if closeErr := rows.Close(); closeErr != nil {
-		return nil, closeErr
-	}
-
-	if err != nil {
-		return nil, err
 	}
 
 	if err = rows.Err(); err != nil {
@@ -140,6 +133,7 @@ func (m ConsumedModel) GetAllByUserIDAndDate(userID int64, from time.Time, to ti
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 
 	var allConsumed []*Consumed
 
@@ -160,17 +154,9 @@ func (m ConsumedModel) GetAllByUserIDAndDate(userID int64, from time.Time, to ti
 			&consumed.Notes,
 		)
 		if err != nil {
-			break
+			return nil, err
 		}
 		allConsumed = append(allConsumed, &consumed)
-	}
-
-	if closeErr := rows.Close(); closeErr != nil {
-		return nil, closeErr
-	}
-
-	if err != nil {
-		return nil, err
 	}
 
 	if err = rows.Err(); err != nil {
