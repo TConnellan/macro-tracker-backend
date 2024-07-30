@@ -7,7 +7,7 @@ import (
 	"github.com/tconnellan/macro-tracker-backend/internal/validator"
 )
 
-type Filters struct {
+type MetadataFilters struct {
 	Page         int
 	PageSize     int
 	Sort         string
@@ -22,7 +22,7 @@ type Metadata struct {
 	TotalRecords int `json:"total_records,omitempty"`
 }
 
-func ValidateFilters(v *validator.Validator, f Filters) {
+func ValidateMetadataFilters(v *validator.Validator, f MetadataFilters) {
 	v.Check(f.Page > 0, "page", "must be greater than zero")
 	v.Check(f.Page <= 10_000_000, "page", "must be a maximum of 10 million")
 	v.Check(f.PageSize > 0, "page_size", "must be greater than zero")
@@ -32,7 +32,7 @@ func ValidateFilters(v *validator.Validator, f Filters) {
 
 }
 
-func (f Filters) sortColumn() string {
+func (f MetadataFilters) sortColumn() string {
 	for _, safeValue := range f.SortSafeList {
 		if f.Sort == safeValue {
 			return strings.TrimPrefix(f.Sort, "-")
@@ -42,18 +42,18 @@ func (f Filters) sortColumn() string {
 	panic("unsafe sort parameter: " + f.Sort)
 }
 
-func (f Filters) sortDirection() string {
+func (f MetadataFilters) sortDirection() string {
 	if strings.HasPrefix(f.Sort, "-") {
 		return "DESC"
 	}
 	return "ASC"
 }
 
-func (f Filters) pageLimit() int {
+func (f MetadataFilters) pageLimit() int {
 	return f.PageSize
 }
 
-func (f Filters) pageOffset() int {
+func (f MetadataFilters) pageOffset() int {
 	return (f.Page - 1) * f.PageSize
 }
 

@@ -30,13 +30,14 @@ type Consumable struct {
 	Macros    Macronutrients  `json:"macros"`
 }
 
-type ConsumableSearchOptions struct {
-	Name                         string
-	BrandName                    string
+type ConsumableFilters struct {
+	Metadata                     MetadataFilters
+	NameSearch                   string
+	BrandNameSearch              string
 	RequireNameAndBrandNameMatch bool
 }
 
-func (options ConsumableSearchOptions) GetKeyWord() string {
+func (options ConsumableFilters) GetWhereClauseDelimiter() string {
 	if options.RequireNameAndBrandNameMatch {
 		return "AND"
 	} else {
@@ -76,8 +77,8 @@ type ConsumableModel struct {
 
 type ConsumableModelInterface interface {
 	GetByID(int64) (*Consumable, error)
-	GetByCreatorID(int64, Filters) ([]*Consumable, Metadata, error)
-	Search(ConsumableSearchOptions, Filters) ([]*Consumable, Metadata, error)
+	GetByCreatorID(int64, ConsumableFilters) ([]*Consumable, Metadata, error)
+	Search(ConsumableFilters) ([]*Consumable, Metadata, error)
 	Insert(*Consumable) error
 	Update(*Consumable) error
 	Delete(int64) error
@@ -160,7 +161,7 @@ func (m *ConsumableModel) readConsumableRows(stmt string, ctx context.Context, a
 	return consumables, recordCount, nil
 }
 
-func (m *ConsumableModel) GetByCreatorID(ID int64, filters Filters) ([]*Consumable, Metadata, error) {
+func (m *ConsumableModel) GetByCreatorID(ID int64, filters ConsumableFilters) ([]*Consumable, Metadata, error) {
 	stmt := fmt.Sprintf(`
 	SELECT COUNT(*) OVER(), id, creator_id, created_at, name, brand_name, size, units, carbs, fats, proteins, alcohol
 	FROM consumables
@@ -168,20 +169,20 @@ func (m *ConsumableModel) GetByCreatorID(ID int64, filters Filters) ([]*Consumab
 	ORDER BY %s %s, id ASC
 	LIMIT $2
 	OFFSET $3
-	`, filters.sortColumn(), filters.sortDirection())
+	`, filters.Metadata.sortColumn(), filters.Metadata.sortDirection())
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	consumables, recordCount, err := m.readConsumableRows(stmt, ctx, ID, filters.pageLimit(), filters.pageOffset())
+	consumables, recordCount, err := m.readConsumableRows(stmt, ctx, ID, filters.Metadata.pageLimit(), filters.Metadata.pageOffset())
 	if err != nil {
 		return nil, Metadata{}, err
 	}
 
-	return consumables, calculateMetadata(recordCount, filters.Page, filters.PageSize), nil
+	return consumables, calculateMetadata(recordCount, filters.Metadata.Page, filters.Metadata.PageSize), nil
 }
 
-func (m *ConsumableModel) Search(searchOptions ConsumableSearchOptions, filters Filters) ([]*Consumable, Metadata, error) {
+func (m *ConsumableModel) Search(filters ConsumableFilters) ([]*Consumable, Metadata, error) {
 	stmt := fmt.Sprintf(`
 	SELECT COUNT(*) OVER(), id, creator_id, created_at, name, brand_name, size, units, carbs, fats, proteins, alcohol
 	FROM consumables
@@ -190,17 +191,17 @@ func (m *ConsumableModel) Search(searchOptions ConsumableSearchOptions, filters 
 	ORDER BY %s %s, id ASC
 	LIMIT $3
 	OFFSET $4
-	`, searchOptions.GetKeyWord(), filters.sortColumn(), filters.sortDirection())
+	`, filters.GetWhereClauseDelimiter(), filters.Metadata.sortColumn(), filters.Metadata.sortDirection())
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	consumables, recordCount, err := m.readConsumableRows(stmt, ctx, searchOptions.Name, searchOptions.BrandName, filters.pageLimit(), filters.pageOffset())
+	consumables, recordCount, err := m.readConsumableRows(stmt, ctx, filters.NameSearch, filters.BrandNameSearch, filters.Metadata.pageLimit(), filters.Metadata.pageOffset())
 	if err != nil {
 		return nil, Metadata{}, err
 	}
 
-	return consumables, calculateMetadata(recordCount, filters.Page, filters.PageSize), nil
+	return consumables, calculateMetadata(recordCount, filters.Metadata.Page, filters.Metadata.PageSize), nil
 }
 
 func (m *ConsumableModel) Insert(consumable *Consumable) error {
