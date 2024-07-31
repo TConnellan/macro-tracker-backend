@@ -2,11 +2,11 @@ package main
 
 import (
 	"context"
-	"database/sql"
 	"flag"
 	"os"
 	"time"
 
+	"github.com/jackc/pgx/v5/pgxpool"
 	_ "github.com/lib/pq"
 	"github.com/tconnellan/macro-tracker-backend/internal/data"
 	"github.com/tconnellan/macro-tracker-backend/internal/jsonlog"
@@ -90,28 +90,60 @@ func main() {
 	}
 }
 
-func openDB(cfg config) (*sql.DB, error) {
-	db, err := sql.Open("postgres", cfg.db.dsn)
+// func openDB3(cfg config) (*sql.DB, error) {
+// 	db, err := sql.Open("postgres", cfg.db.dsn)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+
+// 	db.SetMaxOpenConns(cfg.db.maxOpenConnections)
+// 	db.SetMaxIdleConns(cfg.db.maxIdleConns)
+// 	idleTime, err := time.ParseDuration(cfg.db.maxIdleTime)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	db.SetConnMaxIdleTime(idleTime)
+
+// 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+// 	defer cancel()
+
+// 	err = db.PingContext(ctx)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+
+// 	return db, nil
+
+// }
+
+func openDB(cfg config) (*pgxpool.Pool, error) {
+	connConfig, err := pgxpool.ParseConfig(cfg.db.dsn)
 	if err != nil {
 		return nil, err
 	}
 
-	db.SetMaxOpenConns(cfg.db.maxOpenConnections)
-	db.SetMaxIdleConns(cfg.db.maxIdleConns)
+	connConfig.MaxConns = int32(cfg.db.maxOpenConnections)
+	// connConfig.MaxIdleConns = int32(cfg.db.maxIdleConns)
+
 	idleTime, err := time.ParseDuration(cfg.db.maxIdleTime)
 	if err != nil {
 		return nil, err
 	}
-	db.SetConnMaxIdleTime(idleTime)
+	connConfig.MaxConnIdleTime = idleTime
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	err = db.PingContext(ctx)
+	db, err := pgxpool.NewWithConfig(ctx, connConfig)
 	if err != nil {
 		return nil, err
 	}
 
-	return db, nil
+	err = db.Ping(ctx)
+	if err != nil {
+		db.Close()
+		return nil, err
+	}
 
+	return db, nil
 }

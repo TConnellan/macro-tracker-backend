@@ -6,6 +6,7 @@ import (
 	"errors"
 	"time"
 
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/tconnellan/macro-tracker-backend/internal/validator"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -82,7 +83,8 @@ var (
 )
 
 type UserModel struct {
-	DB *sql.DB
+	// DB *sql.DB
+	DB *pgxpool.Pool
 }
 
 type IUserModel interface {
@@ -102,7 +104,7 @@ RETURNING id, created_at, version`
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	err := m.DB.QueryRowContext(ctx, query, args...).Scan(&user.ID, &user.CreatedAt, &user.Version)
+	err := m.DB.QueryRow(ctx, query, args...).Scan(&user.ID, &user.CreatedAt, &user.Version)
 	if err != nil {
 		switch {
 		case err.Error() == `pq: duplicate key value violates unique constraint "users_email_key"`:
@@ -123,7 +125,7 @@ WHERE email = $1`
 	var user User
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
-	err := m.DB.QueryRowContext(ctx, query, email).Scan(
+	err := m.DB.QueryRow(ctx, query, email).Scan(
 		&user.ID,
 		&user.CreatedAt,
 		&user.Username,
@@ -157,7 +159,7 @@ RETURNING version`
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
-	err := m.DB.QueryRowContext(ctx, query, args...).Scan(&user.Version)
+	err := m.DB.QueryRow(ctx, query, args...).Scan(&user.Version)
 	if err != nil {
 		switch {
 		case err.Error() == `pq: duplicate key value violates unique constraint "users_email_key"`:

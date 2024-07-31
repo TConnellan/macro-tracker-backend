@@ -6,6 +6,7 @@ import (
 	"errors"
 	"time"
 
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/tconnellan/macro-tracker-backend/internal/validator"
 )
 
@@ -27,7 +28,8 @@ func ValidateConsumed(v *validator.Validator, consumed *Consumed) {
 }
 
 type ConsumedModel struct {
-	DB *sql.DB
+	// DB *sql.DB
+	DB *pgxpool.Pool
 }
 
 type IConsumedModel interface {
@@ -49,7 +51,7 @@ func (m ConsumedModel) GetByConsumedID(ConsumedID int64) (*Consumed, error) {
 
 	consumed := &Consumed{}
 
-	err := m.DB.QueryRowContext(ctx, stmt, ConsumedID).Scan(
+	err := m.DB.QueryRow(ctx, stmt, ConsumedID).Scan(
 		&consumed.ID,
 		&consumed.UserID,
 		&consumed.RecipeID,
@@ -84,7 +86,7 @@ func (m ConsumedModel) GetAllByUserID(userID int64) ([]*Consumed, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	rows, err := m.DB.QueryContext(ctx, stmt, userID)
+	rows, err := m.DB.Query(ctx, stmt, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -129,7 +131,7 @@ func (m ConsumedModel) GetAllByUserIDAndDate(userID int64, from time.Time, to ti
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	rows, err := m.DB.QueryContext(ctx, stmt, userID, from, to)
+	rows, err := m.DB.Query(ctx, stmt, userID, from, to)
 	if err != nil {
 		return nil, err
 	}
@@ -186,7 +188,7 @@ func (m ConsumedModel) Insert(consumed *Consumed) error {
 		consumed.LastEditedAt,
 	}
 
-	err := m.DB.QueryRowContext(ctx, stmt, args...).Scan(
+	err := m.DB.QueryRow(ctx, stmt, args...).Scan(
 		&consumed.ID,
 		&consumed.CreatedAt,
 		&consumed.LastEditedAt,
@@ -220,15 +222,12 @@ func (m ConsumedModel) Update(consumed *Consumed) error {
 		consumed.ID,
 	}
 
-	result, err := m.DB.ExecContext(ctx, stmt, args...)
+	result, err := m.DB.Exec(ctx, stmt, args...)
 	if err != nil {
 		return err
 	}
 
-	rows, err := result.RowsAffected()
-	if err != nil {
-		return err
-	}
+	rows := result.RowsAffected()
 
 	if rows == 0 {
 		return ErrRecordNotFound
@@ -244,15 +243,12 @@ func (m ConsumedModel) Delete(ID int64) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	result, err := m.DB.ExecContext(ctx, stmt, ID)
+	result, err := m.DB.Exec(ctx, stmt, ID)
 	if err != nil {
 		return err
 	}
 
-	rows, err := result.RowsAffected()
-	if err != nil {
-		return err
-	}
+	rows := result.RowsAffected()
 
 	if rows != 1 {
 		return ErrRecordNotFound

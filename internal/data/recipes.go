@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/tconnellan/macro-tracker-backend/internal/validator"
 )
 
@@ -94,14 +96,15 @@ type IRecipeModel interface {
 	GetByCreatorID(int64, RecipeFilters) ([]*Recipe, Metadata, error)
 	GetFullRecipe(int64) (*FullRecipe, error)
 	Insert(*Recipe) error
-	// InsertFullRecipe(*FullRecipe) error
+	InsertFullRecipe(*FullRecipe) error
 	Update(*Recipe) error
-	// UpdateFullRecipe(*FullRecipe) error
+	UpdateFullRecipe(*FullRecipe) error
 	Delete(int64) error
 }
 
 type RecipeModel struct {
-	DB *sql.DB
+	// DB *sql.DB
+	DB *pgxpool.Pool
 }
 
 func (m RecipeModel) Get(ID int64) (*Recipe, error) {
@@ -116,7 +119,7 @@ func (m RecipeModel) Get(ID int64) (*Recipe, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	err := m.DB.QueryRowContext(ctx, stmt, ID).Scan(
+	err := m.DB.QueryRow(ctx, stmt, ID).Scan(
 		&recipe.ID,
 		&recipe.Name,
 		&recipe.CreatorID,
@@ -151,7 +154,7 @@ func (m RecipeModel) GetByCreatorID(ID int64, filters RecipeFilters) ([]*Recipe,
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	rows, err := m.DB.QueryContext(ctx, stmt, ID, filters.NameSearch, filters.Metadata.pageLimit(), filters.Metadata.pageOffset())
+	rows, err := m.DB.Query(ctx, stmt, ID, filters.NameSearch, filters.Metadata.pageLimit(), filters.Metadata.pageOffset())
 	if err != nil {
 		return nil, Metadata{}, err
 	}
@@ -203,7 +206,7 @@ func (m RecipeModel) GetFullRecipe(ID int64) (*FullRecipe, error) {
 
 	var recipe Recipe
 
-	if err := m.DB.QueryRowContext(ctx, stmtRecipe, ID).Scan(
+	if err := m.DB.QueryRow(ctx, stmtRecipe, ID).Scan(
 		&recipe.ID,
 		&recipe.Name,
 		&recipe.CreatorID,
@@ -219,7 +222,7 @@ func (m RecipeModel) GetFullRecipe(ID int64) (*FullRecipe, error) {
 		}
 	}
 
-	rows, err := m.DB.QueryContext(ctx, stmtComponents, ID)
+	rows, err := m.DB.Query(ctx, stmtComponents, ID)
 	if err != nil {
 		return nil, err
 	}
@@ -276,8 +279,62 @@ func (m RecipeModel) Insert(recipe *Recipe) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	err := m.DB.QueryRowContext(ctx, stmt, recipe.Name, recipe.CreatorID, recipe.Notes).Scan(&recipe.ID, &recipe.CreatedAt, &recipe.LastEditedAt)
+	err := m.DB.QueryRow(ctx, stmt, recipe.Name, recipe.CreatorID, recipe.Notes).Scan(&recipe.ID, &recipe.CreatedAt, &recipe.LastEditedAt)
 
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m RecipeModel) InsertFullRecipe(fullRecipe *FullRecipe) error {
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	// enforce ReadCommitted Isolevel and Don't defer constraint checks => guarantees consumables that
+	// recipes refers to have been created
+	txn, err := m.DB.BeginTx(ctx, pgx.TxOptions{IsoLevel: pgx.ReadCommitted, AccessMode: pgx.ReadWrite, DeferrableMode: pgx.NotDeferrable})
+	if err != nil {
+		return err
+	}
+	defer txn.Rollback(ctx)
+
+	// we are repeating the Insert code above, however using the above would require refactoring in order to pass the txn through.
+	stmt := `
+	INSERT INTO recipes (recipe_name, creator_id, notes)
+	VALUES ($1, $2, $3)
+	RETURNING id, created_at, last_edited_at
+	`
+
+	err = txn.QueryRow(ctx, stmt, fullRecipe.Recipe.Name, fullRecipe.Recipe.CreatorID, fullRecipe.Recipe.Notes).Scan(&fullRecipe.Recipe.ID, &fullRecipe.Recipe.CreatedAt, &fullRecipe.Recipe.LastEditedAt)
+
+	if err != nil {
+		return err
+	}
+
+	_, err = txn.CopyFrom(ctx, pgx.Identifier{"recipe_components"},
+		[]string{"recipe_id", "consumable_id", "quantity", "step_no", "step_description"},
+		pgx.CopyFromSlice(len(fullRecipe.RecipeComponents), func(i int) ([]any, error) {
+			return []any{
+				fullRecipe.RecipeComponents[i].RecipeID,
+				fullRecipe.RecipeComponents[i].ConsumableID,
+				fullRecipe.RecipeComponents[i].Quantity,
+				fullRecipe.RecipeComponents[i].StepNo,
+				fullRecipe.RecipeComponents[i].StepDescription,
+			}, nil
+		}))
+	if err != nil {
+		return err
+	}
+
+	txn.Commit(ctx)
+
+	// making a whole other request to get the updated rows like this is not ideal
+	// but doing so keeps this method in line with patterns established through the rest of our models
+	// that is mutating the input model to these methods with the updated
+	fullRecipe, err = m.GetFullRecipe(fullRecipe.Recipe.ID)
 	if err != nil {
 		return err
 	}
@@ -295,20 +352,21 @@ func (m RecipeModel) Update(recipe *Recipe) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	result, err := m.DB.ExecContext(ctx, stmt, recipe.ID, recipe.Name, recipe.Notes)
+	result, err := m.DB.Exec(ctx, stmt, recipe.ID, recipe.Name, recipe.Notes)
 	if err != nil {
 		return err
 	}
 
-	rows, err := result.RowsAffected()
-	if err != nil {
-		return err
-	}
+	rows := result.RowsAffected()
 
 	if rows == 0 {
 		return ErrRecordNotFound
 	}
 
+	return nil
+}
+
+func (m RecipeModel) UpdateFullRecipe(fullRecipe *FullRecipe) error {
 	return nil
 }
 
@@ -327,31 +385,28 @@ func (m RecipeModel) Delete(ID int64) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	txn, err := m.DB.BeginTx(ctx, nil)
+	txn, err := m.DB.BeginTx(ctx, pgx.TxOptions{IsoLevel: pgx.ReadUncommitted, AccessMode: pgx.ReadWrite, DeferrableMode: pgx.NotDeferrable})
 	if err != nil {
 		return err
 	}
-	defer txn.Rollback()
+	defer txn.Rollback(ctx)
 
-	_, err = txn.ExecContext(ctx, stmtRecipeComponent, ID)
+	_, err = txn.Exec(ctx, stmtRecipeComponent, ID)
 	if err != nil {
 		return err
 	}
 
-	result, err := txn.ExecContext(ctx, stmtRecipe, ID)
+	result, err := txn.Exec(ctx, stmtRecipe, ID)
 	if err != nil {
 		return err
 	}
-	rows, err := result.RowsAffected()
-	if err != nil {
-		return err
-	}
+	rows := result.RowsAffected()
 
 	if rows == 0 {
 		return ErrRecordNotFound
 	}
 
-	txn.Commit()
+	txn.Commit(ctx)
 
 	return nil
 }

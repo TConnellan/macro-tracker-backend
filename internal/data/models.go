@@ -1,8 +1,9 @@
 package data
 
 import (
-	"database/sql"
 	"errors"
+
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 var (
@@ -17,7 +18,16 @@ type Models struct {
 	Recipes     IRecipeModel
 }
 
-func NewModel(db *sql.DB) Models {
+// func NewModel(db *sql.DB) Models {
+// 	return Models{
+// 		Users:       UserModel{DB: db},
+// 		Consumed:    ConsumedModel{DB: db},
+// 		Consumables: ConsumableModel{DB: db},
+// 		Recipes:     RecipeModel{DB: db},
+// 	}
+// }
+
+func NewModel(db *pgxpool.Pool) Models {
 	return Models{
 		Users:       UserModel{DB: db},
 		Consumed:    ConsumedModel{DB: db},

@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/tconnellan/macro-tracker-backend/internal/validator"
 )
 
@@ -72,7 +73,8 @@ func ValidateConsumable(v *validator.Validator, consumable *Consumable) {
 }
 
 type ConsumableModel struct {
-	DB *sql.DB
+	// DB *sql.DB
+	DB *pgxpool.Pool
 }
 
 type IConsumableModel interface {
@@ -94,7 +96,7 @@ func (m ConsumableModel) GetByID(ID int64) (*Consumable, error) {
 
 	var consumable Consumable
 
-	err := m.DB.QueryRowContext(ctx, stmt, ID).Scan(
+	err := m.DB.QueryRow(ctx, stmt, ID).Scan(
 		&consumable.ID,
 		&consumable.CreatorID,
 		&consumable.CreatedAt,
@@ -123,7 +125,7 @@ func (m ConsumableModel) GetByID(ID int64) (*Consumable, error) {
 
 func (m ConsumableModel) readConsumableRows(stmt string, ctx context.Context, args ...any) ([]*Consumable, int, error) {
 
-	rows, err := m.DB.QueryContext(ctx, stmt, args...)
+	rows, err := m.DB.Query(ctx, stmt, args...)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -226,7 +228,7 @@ func (m ConsumableModel) Insert(consumable *Consumable) error {
 		consumable.Macros.Alcohol,
 	}
 
-	if err := m.DB.QueryRowContext(ctx, stmt, args...).Scan(&consumable.ID, &consumable.CreatedAt); err != nil {
+	if err := m.DB.QueryRow(ctx, stmt, args...).Scan(&consumable.ID, &consumable.CreatedAt); err != nil {
 		return err
 	}
 
@@ -254,15 +256,12 @@ func (m ConsumableModel) Update(consumable *Consumable) error {
 		consumable.Macros.Alcohol,
 	}
 
-	result, err := m.DB.ExecContext(ctx, stmt, args...)
+	result, err := m.DB.Exec(ctx, stmt, args...)
 	if err != nil {
 		return err
 	}
 
-	rows, err := result.RowsAffected()
-	if err != nil {
-		return err
-	}
+	rows := result.RowsAffected()
 
 	if rows == 0 {
 		return ErrRecordNotFound
@@ -280,15 +279,12 @@ func (m ConsumableModel) Delete(ID int64) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	result, err := m.DB.ExecContext(ctx, stmt, ID)
+	result, err := m.DB.Exec(ctx, stmt, ID)
 	if err != nil {
 		return err
 	}
 
-	rows, err := result.RowsAffected()
-	if err != nil {
-		return err
-	}
+	rows := result.RowsAffected()
 
 	if rows == 0 {
 		return ErrRecordNotFound
