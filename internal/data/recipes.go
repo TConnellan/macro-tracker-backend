@@ -92,7 +92,7 @@ type RecipeFilters struct {
 type IRecipeModel interface {
 	Get(int64) (*Recipe, error)
 	GetByCreatorID(int64, RecipeFilters) ([]*Recipe, Metadata, error)
-	// GetFullRecipe(int64) (*FullRecipe, error)
+	GetFullRecipe(int64) (*FullRecipe, error)
 	Insert(*Recipe) error
 	// InsertFullRecipe(*FullRecipe) error
 	Update(*Recipe) error
