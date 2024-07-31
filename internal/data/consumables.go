@@ -75,7 +75,7 @@ type ConsumableModel struct {
 	DB *sql.DB
 }
 
-type ConsumableModelInterface interface {
+type IConsumableModel interface {
 	GetByID(int64) (*Consumable, error)
 	GetByCreatorID(int64, ConsumableFilters) ([]*Consumable, Metadata, error)
 	Search(ConsumableFilters) ([]*Consumable, Metadata, error)
@@ -84,7 +84,7 @@ type ConsumableModelInterface interface {
 	Delete(int64) error
 }
 
-func (m *ConsumableModel) GetByID(ID int64) (*Consumable, error) {
+func (m ConsumableModel) GetByID(ID int64) (*Consumable, error) {
 	stmt := `SELECT id, name, creator_id, created_at, brand_name, size, units, carbs, fats, proteins, alcohol
 	FROM consumables
 	WHERE id = $1`
@@ -121,7 +121,7 @@ func (m *ConsumableModel) GetByID(ID int64) (*Consumable, error) {
 	return &consumable, nil
 }
 
-func (m *ConsumableModel) readConsumableRows(stmt string, ctx context.Context, args ...any) ([]*Consumable, int, error) {
+func (m ConsumableModel) readConsumableRows(stmt string, ctx context.Context, args ...any) ([]*Consumable, int, error) {
 
 	rows, err := m.DB.QueryContext(ctx, stmt, args...)
 	if err != nil {
@@ -161,7 +161,7 @@ func (m *ConsumableModel) readConsumableRows(stmt string, ctx context.Context, a
 	return consumables, recordCount, nil
 }
 
-func (m *ConsumableModel) GetByCreatorID(ID int64, filters ConsumableFilters) ([]*Consumable, Metadata, error) {
+func (m ConsumableModel) GetByCreatorID(ID int64, filters ConsumableFilters) ([]*Consumable, Metadata, error) {
 	stmt := fmt.Sprintf(`
 	SELECT COUNT(*) OVER(), id, creator_id, created_at, name, brand_name, size, units, carbs, fats, proteins, alcohol
 	FROM consumables
@@ -182,7 +182,7 @@ func (m *ConsumableModel) GetByCreatorID(ID int64, filters ConsumableFilters) ([
 	return consumables, calculateMetadata(recordCount, filters.Metadata.Page, filters.Metadata.PageSize), nil
 }
 
-func (m *ConsumableModel) Search(filters ConsumableFilters) ([]*Consumable, Metadata, error) {
+func (m ConsumableModel) Search(filters ConsumableFilters) ([]*Consumable, Metadata, error) {
 	stmt := fmt.Sprintf(`
 	SELECT COUNT(*) OVER(), id, creator_id, created_at, name, brand_name, size, units, carbs, fats, proteins, alcohol
 	FROM consumables
@@ -204,7 +204,7 @@ func (m *ConsumableModel) Search(filters ConsumableFilters) ([]*Consumable, Meta
 	return consumables, calculateMetadata(recordCount, filters.Metadata.Page, filters.Metadata.PageSize), nil
 }
 
-func (m *ConsumableModel) Insert(consumable *Consumable) error {
+func (m ConsumableModel) Insert(consumable *Consumable) error {
 	stmt := `
 	INSERT INTO consumables (creator_id, name, brand_name, size, units, carbs, fats, proteins, alcohol)
 	VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
@@ -233,7 +233,7 @@ func (m *ConsumableModel) Insert(consumable *Consumable) error {
 	return nil
 }
 
-func (m *ConsumableModel) Update(consumable *Consumable) error {
+func (m ConsumableModel) Update(consumable *Consumable) error {
 	stmt := `
 	UPDATE consumables
 	SET name = $2, brand_name = $3, size = $4, units = $5, carbs = $6, fats = $7, proteins = $8, alcohol = $9
@@ -271,7 +271,7 @@ func (m *ConsumableModel) Update(consumable *Consumable) error {
 	return nil
 }
 
-func (m *ConsumableModel) Delete(ID int64) error {
+func (m ConsumableModel) Delete(ID int64) error {
 	stmt := `
 	DELETE FROM consumables
 	WHERE id = $1

@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS recipes (
    recipe_name VARCHAR(50)  ,
    creator_id INTEGER       ,
    created_at TIMESTAMP     DEFAULT current_timestamp,
-   last_edited_at TIMESTAMP ,
+   last_edited_at TIMESTAMP DEFAULT current_timestamp,
    notes TEXT
 );
 

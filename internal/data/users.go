@@ -85,7 +85,7 @@ type UserModel struct {
 	DB *sql.DB
 }
 
-type UserModelInterface interface {
+type IUserModel interface {
 	Insert(*User) error
 	GetByEmail(string) (*User, error)
 	Update(*User) error
