@@ -13,12 +13,14 @@ import (
 )
 
 type Recipe struct {
-	ID           int64     `json:"id"`
-	Name         string    `json:"recipe_name"`
-	CreatorID    int64     `json:"creator_id"`
-	CreatedAt    time.Time `json:"created_at"`
-	LastEditedAt time.Time `json:"last_edited_at"`
-	Notes        string    `json:"notes"`
+	ID             int64     `json:"id"`
+	Name           string    `json:"recipe_name"`
+	CreatorID      int64     `json:"creator_id"`
+	CreatedAt      time.Time `json:"created_at"`
+	LastEditedAt   time.Time `json:"last_edited_at"`
+	Notes          string    `json:"notes"`
+	ParentRecipeID int64     `json:"parent_recipe_id"`
+	IsLatest       bool      `json:"is_latest"`
 }
 
 func ValidateRecipe(v *validator.Validator, recipe *Recipe) {
@@ -109,7 +111,7 @@ type RecipeModel struct {
 
 func (m RecipeModel) Get(ID int64) (*Recipe, error) {
 	stmt := `
-	SELECT id, recipe_name, creator_id, created_at, last_edited_at, notes
+	SELECT id, recipe_name, creator_id, created_at, last_edited_at, notes, parent_recipe_id, is_latest
 	FROM recipes
 	WHERE id = $1
 	`
@@ -126,6 +128,8 @@ func (m RecipeModel) Get(ID int64) (*Recipe, error) {
 		&recipe.CreatedAt,
 		&recipe.LastEditedAt,
 		&recipe.Notes,
+		&recipe.ParentRecipeID,
+		&recipe.IsLatest,
 	)
 
 	if err != nil {
@@ -142,7 +146,7 @@ func (m RecipeModel) Get(ID int64) (*Recipe, error) {
 
 func (m RecipeModel) GetByCreatorID(ID int64, filters RecipeFilters) ([]*Recipe, Metadata, error) {
 	stmt := fmt.Sprintf(`
-	SELECT COUNT(*) OVER(), id, recipe_name, creator_id, created_at, last_edited_at, notes
+	SELECT COUNT(*) OVER(), id, recipe_name, creator_id, created_at, last_edited_at, notes, parent_recipe_id, is_latest
 	FROM recipes
 	WHERE ID = $1
 	  AND $2 = "" or recipe_name LIKE $2
@@ -173,6 +177,8 @@ func (m RecipeModel) GetByCreatorID(ID int64, filters RecipeFilters) ([]*Recipe,
 			&recipe.CreatedAt,
 			&recipe.LastEditedAt,
 			&recipe.Notes,
+			&recipe.ParentRecipeID,
+			&recipe.IsLatest,
 		)
 		if err != nil {
 			return nil, Metadata{}, err
@@ -190,7 +196,7 @@ func (m RecipeModel) GetByCreatorID(ID int64, filters RecipeFilters) ([]*Recipe,
 func (m RecipeModel) GetFullRecipe(ID int64) (*FullRecipe, error) {
 	// join recipe on componets first, then join components on consumables
 	stmtRecipe := `
-	SELECT id, recipe_name, creator_id, created_at, last_edited_at, notes
+	SELECT id, recipe_name, creator_id, created_at, last_edited_at, notes, parent_recipe_id, is_latest
 	FROM recipes
 	WHERE id = $1
 	`
@@ -213,6 +219,8 @@ func (m RecipeModel) GetFullRecipe(ID int64) (*FullRecipe, error) {
 		&recipe.CreatedAt,
 		&recipe.LastEditedAt,
 		&recipe.Notes,
+		&recipe.ParentRecipeID,
+		&recipe.IsLatest,
 	); err != nil {
 		switch {
 		case errors.Is(err, sql.ErrNoRows):
@@ -270,16 +278,20 @@ func (m RecipeModel) GetFullRecipe(ID int64) (*FullRecipe, error) {
 }
 
 func (m RecipeModel) Insert(recipe *Recipe) error {
+	return insert(recipe, m.DB)
+}
+
+func insert(recipe *Recipe, db psqlDB) error {
 	stmt := `
-	INSERT INTO recipes (recipe_name, creator_id, notes)
-	VALUES ($1, $2, $3)
+	INSERT INTO recipes (recipe_name, creator_id, notes, parent_recipe_id, is_latest)
+	VALUES ($1, $2, $3, $4, $5)
 	RETURNING id, created_at, last_edited_at
 	`
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	err := m.DB.QueryRow(ctx, stmt, recipe.Name, recipe.CreatorID, recipe.Notes).Scan(&recipe.ID, &recipe.CreatedAt, &recipe.LastEditedAt)
+	err := db.QueryRow(ctx, stmt, recipe.Name, recipe.CreatorID, recipe.Notes, recipe.ParentRecipeID, recipe.IsLatest).Scan(&recipe.ID, &recipe.CreatedAt, &recipe.LastEditedAt)
 
 	if err != nil {
 		return err
@@ -301,20 +313,36 @@ func (m RecipeModel) InsertFullRecipe(fullRecipe *FullRecipe) error {
 	}
 	defer txn.Rollback(ctx)
 
-	// we are repeating the Insert code above, however using the above would require refactoring in order to pass the txn through.
-	stmt := `
-	INSERT INTO recipes (recipe_name, creator_id, notes)
-	VALUES ($1, $2, $3)
-	RETURNING id, created_at, last_edited_at
-	`
-
-	err = txn.QueryRow(ctx, stmt, fullRecipe.Recipe.Name, fullRecipe.Recipe.CreatorID, fullRecipe.Recipe.Notes).Scan(&fullRecipe.Recipe.ID, &fullRecipe.Recipe.CreatedAt, &fullRecipe.Recipe.LastEditedAt)
-
+	err = insertFullRecipe(fullRecipe, txn)
 	if err != nil {
 		return err
 	}
 
-	_, err = txn.CopyFrom(ctx, pgx.Identifier{"recipe_components"},
+	txn.Commit(ctx)
+
+	// making a whole other request to get the updated rows like this is not ideal
+	// but doing so keeps this method in line with patterns established through the rest of our models
+	// that is mutating the input model to these methods with the updated
+	newFullRecipe, err := m.GetFullRecipe(fullRecipe.Recipe.ID)
+	if err != nil {
+		return err
+	}
+
+	*fullRecipe = *newFullRecipe
+
+	return nil
+}
+
+func insertFullRecipe(fullRecipe *FullRecipe, db psqlDB) error {
+	err := insert(&fullRecipe.Recipe, db)
+	if err != nil {
+		return err
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	_, err = db.CopyFrom(ctx, pgx.Identifier{"recipe_components"},
 		[]string{"recipe_id", "consumable_id", "quantity", "step_no", "step_description"},
 		pgx.CopyFromSlice(len(fullRecipe.RecipeComponents), func(i int) ([]any, error) {
 			return []any{
@@ -329,30 +357,24 @@ func (m RecipeModel) InsertFullRecipe(fullRecipe *FullRecipe) error {
 		return err
 	}
 
-	txn.Commit(ctx)
-
-	// making a whole other request to get the updated rows like this is not ideal
-	// but doing so keeps this method in line with patterns established through the rest of our models
-	// that is mutating the input model to these methods with the updated
-	fullRecipe, err = m.GetFullRecipe(fullRecipe.Recipe.ID)
-	if err != nil {
-		return err
-	}
-
 	return nil
 }
 
 func (m RecipeModel) Update(recipe *Recipe) error {
+	return update(recipe, m.DB)
+}
+
+func update(recipe *Recipe, conn psqlDB) error {
 	stmt := `
 	UPDATE recipes
-	SET recipe_name = $2, last_edited_at = current_timestamp, notes = $3
+	SET recipe_name = $2, last_edited_at = current_timestamp, notes = $3, is_latest = $4
 	WHERE id = $1
 	`
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	result, err := m.DB.Exec(ctx, stmt, recipe.ID, recipe.Name, recipe.Notes)
+	result, err := conn.Exec(ctx, stmt, recipe.ID, recipe.Name, recipe.Notes)
 	if err != nil {
 		return err
 	}
@@ -367,6 +389,40 @@ func (m RecipeModel) Update(recipe *Recipe) error {
 }
 
 func (m RecipeModel) UpdateFullRecipe(fullRecipe *FullRecipe) error {
+
+	fullRecipe.Recipe.IsLatest = false
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	txn, err := m.DB.BeginTx(ctx, pgx.TxOptions{IsoLevel: pgx.ReadCommitted, AccessMode: pgx.ReadWrite, DeferrableMode: pgx.NotDeferrable})
+	if err != nil {
+		return err
+	}
+	defer txn.Rollback(ctx)
+
+	err = update(&fullRecipe.Recipe, txn)
+	if err != nil {
+		return err
+	}
+
+	err = insertFullRecipe(fullRecipe, txn)
+	if err != nil {
+		return err
+	}
+
+	txn.Commit(ctx)
+
+	// making a whole other request to get the updated rows like this is not ideal
+	// but doing so keeps this method in line with patterns established through the rest of our models
+	// that is mutating the input model to these methods with the updated
+	newFullRecipe, err := m.GetFullRecipe(fullRecipe.Recipe.ID)
+	if err != nil {
+		return err
+	}
+
+	*fullRecipe = *newFullRecipe
+
 	return nil
 }
 
