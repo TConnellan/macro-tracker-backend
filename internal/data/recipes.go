@@ -103,6 +103,7 @@ type IRecipeModel interface {
 	UpdateFullRecipe(*FullRecipe) error
 	Delete(int64) error
 	GetParentRecipe(*Recipe) (*Recipe, error)
+	GetAllAncestors(*Recipe, RecipeFilters) ([]*Recipe, Metadata, error)
 }
 
 type RecipeModel struct {
@@ -484,7 +485,7 @@ func getParentRecipe(childRecipe *Recipe, db psqlDB) (*Recipe, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	var parentRecipe *Recipe
+	var parentRecipe Recipe
 
 	args := []any{
 		&parentRecipe.ID,
@@ -507,6 +508,62 @@ func getParentRecipe(childRecipe *Recipe, db psqlDB) (*Recipe, error) {
 		}
 	}
 
-	return parentRecipe, nil
+	return &parentRecipe, nil
+}
 
+func (m RecipeModel) GetAllAncestors(childRecipe *Recipe, filters RecipeFilters) ([]*Recipe, Metadata, error) {
+
+	stmt := fmt.Sprintf(`
+	WITH RECURSIVE ancestors(id, recipe_name, creator_id, created_at, last_edited_at, notes, parent_recipe_id, is_latest) AS (
+		SELECT id, recipe_name, creator_id, created_at, last_edited_at, notes, parent_recipe_id, is_latest
+		FROM recipes
+		WHERE id = $1
+		UNION
+		SELECT id, recipe_name, creator_id, created_at, last_edited_at, notes, parent_recipe_id, is_latest
+		FROM recipes R INNER JOIN ancestors A ON R.id = A.parent_recipe_id
+	)
+	SELECT COUNT(*) OVER(), id, recipe_name, creator_id, created_at,as last_edited_at, notes, AS parent_recipe_id, is_latest
+	FROM ancestors
+	ORDER BY %s %s, id ASC
+	LIMIT $2
+	OFFSET $3
+	`, filters.Metadata.sortColumn(), filters.Metadata.sortDirection())
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	rows, err := m.DB.Query(ctx, stmt, childRecipe.ID, filters.Metadata.pageLimit(), filters.Metadata.pageOffset())
+	if err != nil {
+		return nil, Metadata{}, err
+	}
+	defer rows.Close()
+
+	var ancestors []*Recipe
+	recordCount := 0
+
+	for rows.Next() {
+		var ancestor Recipe
+
+		err = rows.Scan(
+			&recordCount,
+			&ancestor.ID,
+			&ancestor.Name,
+			&ancestor.CreatorID,
+			&ancestor.CreatedAt,
+			&ancestor.LastEditedAt,
+			&ancestor.Notes,
+			&ancestor.ParentRecipeID,
+			&ancestor.IsLatest,
+		)
+		if err != nil {
+			return nil, Metadata{}, err
+		}
+		ancestors = append(ancestors, &ancestor)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, Metadata{}, err
+	}
+
+	return ancestors, calculateMetadata(recordCount, filters.Metadata.Page, filters.Metadata.PageSize), nil
 }
