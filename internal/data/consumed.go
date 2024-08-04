@@ -28,7 +28,6 @@ func ValidateConsumed(v *validator.Validator, consumed *Consumed) {
 }
 
 type ConsumedModel struct {
-	// DB *sql.DB
 	DB *pgxpool.Pool
 }
 

@@ -83,7 +83,6 @@ var (
 )
 
 type UserModel struct {
-	// DB *sql.DB
 	DB *pgxpool.Pool
 }
 

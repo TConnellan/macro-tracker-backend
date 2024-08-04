@@ -102,10 +102,10 @@ type IRecipeModel interface {
 	Update(*Recipe) error
 	UpdateFullRecipe(*FullRecipe) error
 	Delete(int64) error
+	GetParentRecipe(*Recipe) (*Recipe, error)
 }
 
 type RecipeModel struct {
-	// DB *sql.DB
 	DB *pgxpool.Pool
 }
 
@@ -465,4 +465,48 @@ func (m RecipeModel) Delete(ID int64) error {
 	txn.Commit(ctx)
 
 	return nil
+}
+
+func (m RecipeModel) GetParentRecipe(childRecipe *Recipe) (*Recipe, error) {
+	return getParentRecipe(childRecipe, m.DB)
+}
+
+func getParentRecipe(childRecipe *Recipe, db psqlDB) (*Recipe, error) {
+	if childRecipe.ParentRecipeID == 0 {
+		return nil, nil
+	}
+	stmt := `
+	SELECT id, recipe_name, creator_id, created_at, last_edited_at, notes, parent_recipe_id, is_latest
+	FROM recipes
+	WHERE id = $1
+	`
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	var parentRecipe *Recipe
+
+	args := []any{
+		&parentRecipe.ID,
+		&parentRecipe.Name,
+		&parentRecipe.CreatorID,
+		&parentRecipe.CreatedAt,
+		&parentRecipe.LastEditedAt,
+		&parentRecipe.Notes,
+		&parentRecipe.ParentRecipeID,
+		&parentRecipe.IsLatest,
+	}
+
+	err := db.QueryRow(ctx, stmt, childRecipe.ParentRecipeID).Scan(args...)
+	if err != nil {
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return nil, ErrRecordNotFound
+		default:
+			return nil, err
+		}
+	}
+
+	return parentRecipe, nil
+
 }
