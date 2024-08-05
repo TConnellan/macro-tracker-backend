@@ -1,7 +1,6 @@
 package data
 
 import (
-	"context"
 	"errors"
 	"time"
 
@@ -100,7 +99,7 @@ RETURNING id, created_at, version`
 
 	args := []any{user.Username, user.Email, user.Password.hash}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	ctx, cancel := GetDefaultTimeoutContext()
 	defer cancel()
 
 	err := m.DB.QueryRow(ctx, query, args...).Scan(&user.ID, &user.CreatedAt, &user.Version)
@@ -122,7 +121,7 @@ SELECT id, created_at, name, email, password_hash, version
 FROM users
 WHERE email = $1`
 	var user User
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	ctx, cancel := GetDefaultTimeoutContext()
 	defer cancel()
 	err := m.DB.QueryRow(ctx, query, email).Scan(
 		&user.ID,
@@ -156,7 +155,7 @@ RETURNING version`
 		user.ID,
 		user.Version,
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	ctx, cancel := GetDefaultTimeoutContext()
 	defer cancel()
 	err := m.DB.QueryRow(ctx, query, args...).Scan(&user.Version)
 	if err != nil {

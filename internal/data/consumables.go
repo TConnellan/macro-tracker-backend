@@ -90,7 +90,7 @@ func (m ConsumableModel) GetByID(ID int64) (*Consumable, error) {
 	FROM consumables
 	WHERE id = $1`
 
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	ctx, cancel := GetDefaultTimeoutContext()
 	defer cancel()
 
 	var consumable Consumable
@@ -172,7 +172,7 @@ func (m ConsumableModel) GetByCreatorID(ID int64, filters ConsumableFilters) ([]
 	OFFSET $3
 	`, filters.Metadata.sortColumn(), filters.Metadata.sortDirection())
 
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	ctx, cancel := GetDefaultTimeoutContext()
 	defer cancel()
 
 	consumables, recordCount, err := m.readConsumableRows(stmt, ctx, ID, filters.Metadata.pageLimit(), filters.Metadata.pageOffset())
@@ -194,7 +194,7 @@ func (m ConsumableModel) Search(filters ConsumableFilters) ([]*Consumable, Metad
 	OFFSET $4
 	`, filters.GetWhereClauseDelimiter(), filters.Metadata.sortColumn(), filters.Metadata.sortDirection())
 
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	ctx, cancel := GetDefaultTimeoutContext()
 	defer cancel()
 
 	consumables, recordCount, err := m.readConsumableRows(stmt, ctx, filters.NameSearch, filters.BrandNameSearch, filters.Metadata.pageLimit(), filters.Metadata.pageOffset())
@@ -212,7 +212,7 @@ func (m ConsumableModel) Insert(consumable *Consumable) error {
 	RETURNING id, created_at
 	`
 
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	ctx, cancel := GetDefaultTimeoutContext()
 	defer cancel()
 
 	args := []any{
@@ -241,7 +241,7 @@ func (m ConsumableModel) Update(consumable *Consumable) error {
 	WHERE id = $1
 	`
 
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	ctx, cancel := GetDefaultTimeoutContext()
 	defer cancel()
 
 	args := []any{
@@ -275,7 +275,7 @@ func (m ConsumableModel) Delete(ID int64) error {
 	WHERE id = $1
 	`
 
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	ctx, cancel := GetDefaultTimeoutContext()
 	defer cancel()
 
 	result, err := m.DB.Exec(ctx, stmt, ID)
