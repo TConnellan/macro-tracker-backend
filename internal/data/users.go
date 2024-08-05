@@ -2,10 +2,10 @@ package data
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 	"time"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/tconnellan/macro-tracker-backend/internal/validator"
 	"golang.org/x/crypto/bcrypt"
@@ -134,7 +134,7 @@ WHERE email = $1`
 	)
 	if err != nil {
 		switch {
-		case errors.Is(err, sql.ErrNoRows):
+		case errors.Is(err, pgx.ErrNoRows):
 			return nil, ErrRecordNotFound
 		default:
 			return nil, err
@@ -163,7 +163,7 @@ RETURNING version`
 		switch {
 		case err.Error() == `pq: duplicate key value violates unique constraint "users_email_key"`:
 			return ErrDuplicateEmail
-		case errors.Is(err, sql.ErrNoRows):
+		case errors.Is(err, pgx.ErrNoRows):
 			return ErrEditConflict
 		default:
 			return err

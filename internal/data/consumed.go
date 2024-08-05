@@ -2,10 +2,10 @@ package data
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 	"time"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/tconnellan/macro-tracker-backend/internal/validator"
 )
@@ -67,7 +67,7 @@ func (m ConsumedModel) GetByConsumedID(ConsumedID int64) (*Consumed, error) {
 
 	if err != nil {
 		switch {
-		case errors.Is(err, sql.ErrNoRows):
+		case errors.Is(err, pgx.ErrNoRows):
 			return nil, ErrRecordNotFound
 		default:
 			return nil, err

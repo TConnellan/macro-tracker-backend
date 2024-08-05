@@ -28,25 +28,33 @@ func ValidateRecipe(v *validator.Validator, recipe *Recipe) {
 	v.Check(len(recipe.Name) <= 50, "recipe_name", "Must be at most 50 characters")
 }
 
+// type PantryConsumable struct {
+// }
+
 type FullRecipe struct {
 	Recipe           Recipe
 	RecipeComponents []*RecipeComponent
+	PantryItems      []*PantryItem
 	Consumables      []*Consumable
 }
 
-func ValidateComponentConsumableList(v *validator.Validator, recipeID int64, recipeComponents []*RecipeComponent, consumables []*Consumable) {
+func ValidateComponentConsumableList(v *validator.Validator, recipeID int64, recipeComponents []*RecipeComponent, pantryItems []*PantryItem, consumables []*Consumable) {
 	// same length, more than zero
-	v.Check(len(recipeComponents) == len(consumables), "recipe_steps", "must have same number of components as steps")
+	v.Check(len(recipeComponents) == len(pantryItems) && len(pantryItems) == len(consumables), "recipe_steps", "must have same number of components as steps")
 	v.Check(len(recipeComponents) > 0, "recipe_steps", "must have at least one step")
 	v.Check(len(consumables) > 0, "recipe_steps", "must have at least one step")
+	v.Check(len(pantryItems) > 0, "recipe_steps", "must have at least one step")
 
-	if len(recipeComponents) == len(consumables) {
+	if len(recipeComponents) == len(pantryItems) && len(pantryItems) == len(consumables) {
 		n := int64(len(recipeComponents))
 		i := int64(0)
 
 		for i < n {
-			v.Check(recipeComponents[i].ConsumableID == consumables[i].ID, "recipe_steps", fmt.Sprintf("consumable ids of step %d must match", recipeComponents[i].ConsumableID))
+			v.Check(recipeComponents[i].PantryItemID == pantryItems[i].ID, "recipe_steps", fmt.Sprintf("consumable ids of step %d must match", recipeComponents[i].PantryItemID))
+			v.Check(pantryItems[i].ConsumableId == consumables[i].ID, "recipe_steps", fmt.Sprintf("consumable ids of step %d must match", recipeComponents[i].PantryItemID))
 			v.Check(recipeComponents[i].RecipeID == recipeID, "recipe_id", "must be the same for all steps")
+
+			i += 1
 		}
 
 		j := int64(0)
@@ -69,6 +77,7 @@ func ValidateComponentConsumableList(v *validator.Validator, recipeID int64, rec
 				}
 
 				recipeComponents[j], recipeComponents[actualIndex] = recipeComponents[actualIndex], recipeComponents[j]
+				pantryItems[j], pantryItems[actualIndex] = pantryItems[actualIndex], pantryItems[j]
 				consumables[j], consumables[actualIndex] = consumables[actualIndex], consumables[j]
 			}
 
@@ -79,9 +88,12 @@ func ValidateComponentConsumableList(v *validator.Validator, recipeID int64, rec
 
 func ValidateFullRecipe(v *validator.Validator, fullRecipe *FullRecipe) {
 	ValidateRecipe(v, &fullRecipe.Recipe)
-	ValidateComponentConsumableList(v, fullRecipe.Recipe.ID, fullRecipe.RecipeComponents, fullRecipe.Consumables)
+	ValidateComponentConsumableList(v, fullRecipe.Recipe.ID, fullRecipe.RecipeComponents, fullRecipe.PantryItems, fullRecipe.Consumables)
 	for _, recipeComponent := range fullRecipe.RecipeComponents {
 		ValidateRecipeComponent(v, recipeComponent)
+	}
+	for _, pantryItem := range fullRecipe.PantryItems {
+		ValidatePantryItem(v, pantryItem)
 	}
 	for _, consumable := range fullRecipe.Consumables {
 		ValidateConsumable(v, consumable)
@@ -96,6 +108,7 @@ type RecipeFilters struct {
 type IRecipeModel interface {
 	Get(int64) (*Recipe, error)
 	GetByCreatorID(int64, RecipeFilters) ([]*Recipe, Metadata, error)
+	GetLatestByCreatorID(int64, RecipeFilters) ([]*Recipe, Metadata, error)
 	GetFullRecipe(int64) (*FullRecipe, error)
 	Insert(*Recipe) error
 	InsertFullRecipe(*FullRecipe) error
@@ -194,6 +207,55 @@ func (m RecipeModel) GetByCreatorID(ID int64, filters RecipeFilters) ([]*Recipe,
 	return recipes, calculateMetadata(recordCount, filters.Metadata.Page, filters.Metadata.PageSize), nil
 }
 
+func (m RecipeModel) GetLatestByCreatorID(ID int64, filters RecipeFilters) ([]*Recipe, Metadata, error) {
+	stmt := fmt.Sprintf(`
+	SELECT COUNT(*) OVER(), id, recipe_name, creator_id, created_at, last_edited_at, notes, parent_recipe_id, is_latest
+	FROM recipes
+	WHERE ID = $1 AND is_latest = TRUE
+	  AND $2 = "" or recipe_name LIKE $2
+	ORDER BY %s %s, id ASC
+	LIMIT $3
+	OFFSET $4
+	`, filters.Metadata.sortColumn(), filters.Metadata.sortDirection())
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	rows, err := m.DB.Query(ctx, stmt, ID, filters.NameSearch, filters.Metadata.pageLimit(), filters.Metadata.pageOffset())
+	if err != nil {
+		return nil, Metadata{}, err
+	}
+	defer rows.Close()
+
+	var recordCount int = 0
+	var recipes []*Recipe
+
+	for rows.Next() {
+		var recipe Recipe
+		err = rows.Scan(
+			&recordCount,
+			&recipe.ID,
+			&recipe.Name,
+			&recipe.CreatorID,
+			&recipe.CreatedAt,
+			&recipe.LastEditedAt,
+			&recipe.Notes,
+			&recipe.ParentRecipeID,
+			&recipe.IsLatest,
+		)
+		if err != nil {
+			return nil, Metadata{}, err
+		}
+		recipes = append(recipes, &recipe)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, Metadata{}, err
+	}
+
+	return recipes, calculateMetadata(recordCount, filters.Metadata.Page, filters.Metadata.PageSize), nil
+}
+
 func (m RecipeModel) GetFullRecipe(ID int64) (*FullRecipe, error) {
 	// join recipe on componets first, then join components on consumables
 	stmtRecipe := `
@@ -203,8 +265,10 @@ func (m RecipeModel) GetFullRecipe(ID int64) (*FullRecipe, error) {
 	`
 
 	stmtComponents := `
-	SELECT RC.id, RC.recipe_id, RC.consumable_id, RC.created-at, RC.quantity, RC.step_no, RC.step_description, C.id, C.creator_id, C.created_at, C.name, C.brand_name, C.size, C.units, C.carbs, c.fats, C.proteins, C.alcohol
-	FROM recipe_components RC INNER JOIN consumables C ON RC.consumable_id = C.id
+	SELECT RC.id, RC.recipe_id, RC.pantry_item_id, RC.created-at, RC.quantity, RC.step_no, RC.step_description, P.id, P.user_id, P.consumable_id, P.name, P.created_at, P.last_edited_at, C.id, C.creator_id, C.created_at, C.name, C.brand_name, C.size, C.units, C.carbs, c.fats, C.proteins, C.alcohol
+	FROM recipe_components RC 
+	     INNER JOIN pantry_items P ON RC.pantry_item_id = P.id
+		 INNER JOIN consumables C ON P.consumable_id = C.id
 	WHERE RC.recipe_id = $1
 	`
 
@@ -238,19 +302,27 @@ func (m RecipeModel) GetFullRecipe(ID int64) (*FullRecipe, error) {
 	defer rows.Close()
 
 	components := []*RecipeComponent{}
+	pantryItems := []*PantryItem{}
 	consumables := []*Consumable{}
 
 	for rows.Next() {
 		var component RecipeComponent
+		var pantryItem PantryItem
 		var consumable Consumable
 		err = rows.Scan(
 			&component.ID,
 			&component.RecipeID,
-			&component.ConsumableID,
+			&component.PantryItemID,
 			&component.CreatedAt,
 			&component.Quantity,
 			&component.StepNo,
 			&component.StepDescription,
+			&pantryItem.ID,
+			&pantryItem.UserID,
+			&pantryItem.ConsumableId,
+			&pantryItem.Name,
+			&pantryItem.CreatedAt,
+			&pantryItem.LastEditedAt,
 			&consumable.ID,
 			&consumable.CreatorID,
 			&consumable.CreatedAt,
@@ -268,21 +340,22 @@ func (m RecipeModel) GetFullRecipe(ID int64) (*FullRecipe, error) {
 		}
 		components = append(components, &component)
 		consumables = append(consumables, &consumable)
+		pantryItems = append(pantryItems, &pantryItem)
 	}
 
 	if err = rows.Err(); err != nil {
 		return nil, err
 	}
 
-	return &FullRecipe{Recipe: recipe, RecipeComponents: components, Consumables: consumables}, nil
+	return &FullRecipe{Recipe: recipe, RecipeComponents: components, PantryItems: pantryItems, Consumables: consumables}, nil
 
 }
 
 func (m RecipeModel) Insert(recipe *Recipe) error {
-	return insert(recipe, m.DB)
+	return insertRecipe(recipe, m.DB)
 }
 
-func insert(recipe *Recipe, db psqlDB) error {
+func insertRecipe(recipe *Recipe, db psqlDB) error {
 	stmt := `
 	INSERT INTO recipes (recipe_name, creator_id, notes, parent_recipe_id, is_latest)
 	VALUES ($1, $2, $3, $4, $5)
@@ -335,20 +408,21 @@ func (m RecipeModel) InsertFullRecipe(fullRecipe *FullRecipe) error {
 }
 
 func insertFullRecipe(fullRecipe *FullRecipe, db psqlDB) error {
-	err := insert(&fullRecipe.Recipe, db)
+	err := insertRecipe(&fullRecipe.Recipe, db)
 	if err != nil {
 		return err
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	ctx, cancel := GetDefaultTimeoutContext()
 	defer cancel()
 
+	// insert recipe components, will fail if pantry items don't already exist
 	_, err = db.CopyFrom(ctx, pgx.Identifier{"recipe_components"},
-		[]string{"recipe_id", "consumable_id", "quantity", "step_no", "step_description"},
+		[]string{"recipe_id", "pantry_item_id", "quantity", "step_no", "step_description"},
 		pgx.CopyFromSlice(len(fullRecipe.RecipeComponents), func(i int) ([]any, error) {
 			return []any{
 				fullRecipe.RecipeComponents[i].RecipeID,
-				fullRecipe.RecipeComponents[i].ConsumableID,
+				fullRecipe.RecipeComponents[i].PantryItemID,
 				fullRecipe.RecipeComponents[i].Quantity,
 				fullRecipe.RecipeComponents[i].StepNo,
 				fullRecipe.RecipeComponents[i].StepDescription,
@@ -362,10 +436,10 @@ func insertFullRecipe(fullRecipe *FullRecipe, db psqlDB) error {
 }
 
 func (m RecipeModel) Update(recipe *Recipe) error {
-	return update(recipe, m.DB)
+	return updateRecipe(recipe, m.DB)
 }
 
-func update(recipe *Recipe, conn psqlDB) error {
+func updateRecipe(recipe *Recipe, conn psqlDB) error {
 	stmt := `
 	UPDATE recipes
 	SET recipe_name = $2, last_edited_at = current_timestamp, notes = $3, is_latest = $4
@@ -389,6 +463,7 @@ func update(recipe *Recipe, conn psqlDB) error {
 	return nil
 }
 
+// not good name, maybe createChildOfFullRecipe()
 func (m RecipeModel) UpdateFullRecipe(fullRecipe *FullRecipe) error {
 
 	fullRecipe.Recipe.IsLatest = false
@@ -402,7 +477,7 @@ func (m RecipeModel) UpdateFullRecipe(fullRecipe *FullRecipe) error {
 	}
 	defer txn.Rollback(ctx)
 
-	err = update(&fullRecipe.Recipe, txn)
+	err = updateRecipe(&fullRecipe.Recipe, txn)
 	if err != nil {
 		return err
 	}

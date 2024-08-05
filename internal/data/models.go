@@ -15,18 +15,22 @@ var (
 )
 
 type Models struct {
-	Users       IUserModel
-	Consumed    IConsumedModel
-	Consumables IConsumableModel
-	Recipes     IRecipeModel
+	Users            IUserModel
+	Consumed         IConsumedModel
+	Consumables      IConsumableModel
+	Recipes          IRecipeModel
+	RecipeComponents IRecipeComponentModel
+	PantryItems      IPantryItemModel
 }
 
 func NewModel(db *pgxpool.Pool) Models {
 	return Models{
-		Users:       UserModel{DB: db},
-		Consumed:    ConsumedModel{DB: db},
-		Consumables: ConsumableModel{DB: db},
-		Recipes:     RecipeModel{DB: db},
+		Users:            UserModel{DB: db},
+		Consumed:         ConsumedModel{DB: db},
+		Consumables:      ConsumableModel{DB: db},
+		Recipes:          RecipeModel{DB: db},
+		RecipeComponents: RecipeComponentModel{DB: db},
+		PantryItems:      PantryItemModel{DB: db},
 	}
 }
 

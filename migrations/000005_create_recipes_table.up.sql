@@ -7,4 +7,4 @@ CREATE TABLE IF NOT EXISTS recipes (
    notes TEXT
 );
 
-ALTER TABLE recipe ADD CONSTRAINT fk_recipe_creator FOREIGN KEY (creator_id) REFERENCES users(id);
+ALTER TABLE recipes ADD CONSTRAINT fk_recipe_creator FOREIGN KEY (creator_id) REFERENCES users(id);
