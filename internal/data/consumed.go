@@ -1,7 +1,6 @@
 package data
 
 import (
-	"context"
 	"errors"
 	"time"
 
@@ -45,7 +44,7 @@ func (m ConsumedModel) GetByConsumedID(ConsumedID int64) (*Consumed, error) {
 	FROM consumed
 	WHERE id = $1`
 
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	ctx, cancel := GetDefaultTimeoutContext()
 	defer cancel()
 
 	consumed := &Consumed{}
@@ -82,7 +81,7 @@ func (m ConsumedModel) GetAllByUserID(userID int64) ([]*Consumed, error) {
 	FROM consumed
 	WHERE user_id = $1`
 
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	ctx, cancel := GetDefaultTimeoutContext()
 	defer cancel()
 
 	rows, err := m.DB.Query(ctx, stmt, userID)
@@ -127,7 +126,7 @@ func (m ConsumedModel) GetAllByUserIDAndDate(userID int64, from time.Time, to ti
 	FROM consumed
 	WHERE user_id = $1 AND consumed_at >= $2 and consumed_at <= $3`
 
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	ctx, cancel := GetDefaultTimeoutContext()
 	defer cancel()
 
 	rows, err := m.DB.Query(ctx, stmt, userID, from, to)
@@ -172,7 +171,7 @@ func (m ConsumedModel) Insert(consumed *Consumed) error {
 	VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 	RETURNING id, created_at, last_edited_at`
 
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	ctx, cancel := GetDefaultTimeoutContext()
 	defer cancel()
 
 	args := []any{
@@ -205,7 +204,7 @@ func (m ConsumedModel) Update(consumed *Consumed) error {
 	SET user_id = $1, recipe_id = $2, quantity = $3, carbs = $4, fats = $5, proteins = $6, alcohol = $7, consumed_at = $8, last_edited_at = current_timestamp, notes=$9
 	WHERE id = $10`
 
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	ctx, cancel := GetDefaultTimeoutContext()
 	defer cancel()
 
 	args := []any{
@@ -239,7 +238,7 @@ func (m ConsumedModel) Delete(ID int64) error {
 	stmt := `DELETE FROM consumed
 	WHERE id = $1`
 
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	ctx, cancel := GetDefaultTimeoutContext()
 	defer cancel()
 
 	result, err := m.DB.Exec(ctx, stmt, ID)

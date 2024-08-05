@@ -1,7 +1,6 @@
 package data
 
 import (
-	"context"
 	"database/sql"
 	"errors"
 	"fmt"
@@ -132,7 +131,7 @@ func (m RecipeModel) Get(ID int64) (*Recipe, error) {
 
 	var recipe Recipe
 
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	ctx, cancel := GetDefaultTimeoutContext()
 	defer cancel()
 
 	err := m.DB.QueryRow(ctx, stmt, ID).Scan(
@@ -169,7 +168,7 @@ func (m RecipeModel) GetByCreatorID(ID int64, filters RecipeFilters) ([]*Recipe,
 	OFFSET $4
 	`, filters.Metadata.sortColumn(), filters.Metadata.sortDirection())
 
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	ctx, cancel := GetDefaultTimeoutContext()
 	defer cancel()
 
 	rows, err := m.DB.Query(ctx, stmt, ID, filters.NameSearch, filters.Metadata.pageLimit(), filters.Metadata.pageOffset())
@@ -218,7 +217,7 @@ func (m RecipeModel) GetLatestByCreatorID(ID int64, filters RecipeFilters) ([]*R
 	OFFSET $4
 	`, filters.Metadata.sortColumn(), filters.Metadata.sortDirection())
 
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	ctx, cancel := GetDefaultTimeoutContext()
 	defer cancel()
 
 	rows, err := m.DB.Query(ctx, stmt, ID, filters.NameSearch, filters.Metadata.pageLimit(), filters.Metadata.pageOffset())
@@ -272,7 +271,7 @@ func (m RecipeModel) GetFullRecipe(ID int64) (*FullRecipe, error) {
 	WHERE RC.recipe_id = $1
 	`
 
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	ctx, cancel := GetDefaultTimeoutContext()
 	defer cancel()
 
 	var recipe Recipe
@@ -362,7 +361,7 @@ func insertRecipe(recipe *Recipe, db psqlDB) error {
 	RETURNING id, created_at, last_edited_at
 	`
 
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	ctx, cancel := GetDefaultTimeoutContext()
 	defer cancel()
 
 	err := db.QueryRow(ctx, stmt, recipe.Name, recipe.CreatorID, recipe.Notes, recipe.ParentRecipeID, recipe.IsLatest).Scan(&recipe.ID, &recipe.CreatedAt, &recipe.LastEditedAt)
@@ -376,7 +375,7 @@ func insertRecipe(recipe *Recipe, db psqlDB) error {
 
 func (m RecipeModel) InsertFullRecipe(fullRecipe *FullRecipe) error {
 
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	ctx, cancel := GetDefaultTimeoutContext()
 	defer cancel()
 
 	// enforce ReadCommitted Isolevel and Don't defer constraint checks => guarantees consumables that
@@ -446,7 +445,7 @@ func updateRecipe(recipe *Recipe, conn psqlDB) error {
 	WHERE id = $1
 	`
 
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	ctx, cancel := GetDefaultTimeoutContext()
 	defer cancel()
 
 	result, err := conn.Exec(ctx, stmt, recipe.ID, recipe.Name, recipe.Notes)
@@ -468,7 +467,7 @@ func (m RecipeModel) UpdateFullRecipe(fullRecipe *FullRecipe) error {
 
 	fullRecipe.Recipe.IsLatest = false
 
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	ctx, cancel := GetDefaultTimeoutContext()
 	defer cancel()
 
 	txn, err := m.DB.BeginTx(ctx, pgx.TxOptions{IsoLevel: pgx.ReadCommitted, AccessMode: pgx.ReadWrite, DeferrableMode: pgx.NotDeferrable})
@@ -514,7 +513,7 @@ func (m RecipeModel) Delete(ID int64) error {
 	WHERE id = $1;
 	`
 
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	ctx, cancel := GetDefaultTimeoutContext()
 	defer cancel()
 
 	txn, err := m.DB.BeginTx(ctx, pgx.TxOptions{IsoLevel: pgx.ReadUncommitted, AccessMode: pgx.ReadWrite, DeferrableMode: pgx.NotDeferrable})
@@ -557,7 +556,7 @@ func getParentRecipe(childRecipe *Recipe, db psqlDB) (*Recipe, error) {
 	WHERE id = $1
 	`
 
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	ctx, cancel := GetDefaultTimeoutContext()
 	defer cancel()
 
 	var parentRecipe Recipe
@@ -604,7 +603,7 @@ func (m RecipeModel) GetAllAncestors(childRecipe *Recipe, filters RecipeFilters)
 	OFFSET $3
 	`, filters.Metadata.sortColumn(), filters.Metadata.sortDirection())
 
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	ctx, cancel := GetDefaultTimeoutContext()
 	defer cancel()
 
 	rows, err := m.DB.Query(ctx, stmt, childRecipe.ID, filters.Metadata.pageLimit(), filters.Metadata.pageOffset())
