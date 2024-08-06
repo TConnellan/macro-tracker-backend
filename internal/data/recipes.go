@@ -39,48 +39,40 @@ type FullRecipe struct {
 
 func ValidateComponentConsumableList(v *validator.Validator, recipeID int64, recipeComponents []*RecipeComponent, pantryItems []*PantryItem, consumables []*Consumable) {
 	// same length, more than zero
-	v.Check(len(recipeComponents) == len(pantryItems) && len(pantryItems) == len(consumables), "recipe_steps", "must have same number of components as steps")
 	v.Check(len(recipeComponents) > 0, "recipe_steps", "must have at least one step")
-	v.Check(len(consumables) > 0, "recipe_steps", "must have at least one step")
-	v.Check(len(pantryItems) > 0, "recipe_steps", "must have at least one step")
+	v.Check(len(recipeComponents) == len(pantryItems) && len(pantryItems) == len(consumables), "recipe_steps", "must have same number of components as steps")
 
 	if len(recipeComponents) == len(pantryItems) && len(pantryItems) == len(consumables) {
 		n := int64(len(recipeComponents))
 		i := int64(0)
 
+		// sort recipeComponents based on StepNo, mirroring the alterations
+		// in pantryItems and consumables. Check that step numbers are valid
 		for i < n {
 			v.Check(recipeComponents[i].PantryItemID == pantryItems[i].ID, "recipe_steps", fmt.Sprintf("consumable ids of step %d must match", recipeComponents[i].PantryItemID))
 			v.Check(pantryItems[i].ConsumableId == consumables[i].ID, "recipe_steps", fmt.Sprintf("consumable ids of step %d must match", recipeComponents[i].PantryItemID))
 			v.Check(recipeComponents[i].RecipeID == recipeID, "recipe_id", "must be the same for all steps")
 
-			i += 1
-		}
+			for recipeComponents[i].StepNo != i+1 {
 
-		j := int64(0)
-
-		// sort recipeComponents based on StepNo, mirroring the alterations
-		// in consumables. Check that step numbers are valid
-		for j < n {
-			for recipeComponents[j].StepNo != j+1 {
-
-				if recipeComponents[j].StepNo < 1 || recipeComponents[j].StepNo > n {
+				if recipeComponents[i].StepNo < 1 || recipeComponents[i].StepNo > n {
 					v.Check(false, "step_numbers", "must be in range of 1..num_steps")
 					break
 				}
 
-				actualIndex := recipeComponents[j].StepNo - 1
+				actualIndex := recipeComponents[i].StepNo - 1
 
-				if recipeComponents[j].StepNo == recipeComponents[actualIndex].StepNo {
+				if recipeComponents[i].StepNo == recipeComponents[actualIndex].StepNo {
 					v.Check(false, "step_numbers", "must be unique")
 					break
 				}
 
-				recipeComponents[j], recipeComponents[actualIndex] = recipeComponents[actualIndex], recipeComponents[j]
-				pantryItems[j], pantryItems[actualIndex] = pantryItems[actualIndex], pantryItems[j]
-				consumables[j], consumables[actualIndex] = consumables[actualIndex], consumables[j]
+				recipeComponents[i], recipeComponents[actualIndex] = recipeComponents[actualIndex], recipeComponents[i]
+				pantryItems[i], pantryItems[actualIndex] = pantryItems[actualIndex], pantryItems[i]
+				consumables[i], consumables[actualIndex] = consumables[actualIndex], consumables[i]
 			}
 
-			j += 1
+			i += 1
 		}
 	}
 }
@@ -391,7 +383,10 @@ func (m RecipeModel) InsertFullRecipe(fullRecipe *FullRecipe) error {
 		return err
 	}
 
-	txn.Commit(ctx)
+	err = txn.Commit(ctx)
+	if err != nil {
+		return err
+	}
 
 	// making a whole other request to get the updated rows like this is not ideal
 	// but doing so keeps this method in line with patterns established through the rest of our models
@@ -486,7 +481,10 @@ func (m RecipeModel) UpdateFullRecipe(fullRecipe *FullRecipe) error {
 		return err
 	}
 
-	txn.Commit(ctx)
+	err = txn.Commit(ctx)
+	if err != nil {
+		return err
+	}
 
 	// making a whole other request to get the updated rows like this is not ideal
 	// but doing so keeps this method in line with patterns established through the rest of our models
@@ -537,7 +535,10 @@ func (m RecipeModel) Delete(ID int64) error {
 		return ErrRecordNotFound
 	}
 
-	txn.Commit(ctx)
+	err = txn.Commit(ctx)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
