@@ -87,6 +87,7 @@ type UserModel struct {
 
 type IUserModel interface {
 	Insert(*User) error
+	Exists(int) (bool, error)
 	GetByEmail(string) (*User, error)
 	Update(*User) error
 }
@@ -113,6 +114,19 @@ RETURNING id, created_at, version`
 	}
 
 	return nil
+}
+
+func (m UserModel) Exists(id int) (bool, error) {
+	var exists bool
+
+	stmt := "SELECT EXISTS(SELECT true FROM users WHERE id =?)"
+
+	ctx, cancel := GetDefaultTimeoutContext()
+	defer cancel()
+
+	err := m.DB.QueryRow(ctx, stmt, id).Scan(&exists)
+	return exists, err
+
 }
 
 func (m UserModel) GetByEmail(email string) (*User, error) {

@@ -1,0 +1,1 @@
+CREATE INDEX IF NOT EXISTS idx_consumed_consumerid ON consumed USING BTREE(user_id);

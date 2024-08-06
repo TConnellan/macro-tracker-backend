@@ -50,7 +50,7 @@ func main() {
 
 	flag.IntVar(&cfg.port, "port", 4000, "API server port")
 	flag.StringVar(&cfg.env, "env", "development", "Environment (development|staging|production)")
-	flag.StringVar(&cfg.db.dsn, "db-dsn", os.Getenv("GREENLIGHT_DB_DSN"), "PostgreSQL DSN")
+	flag.StringVar(&cfg.db.dsn, "db-dsn", os.Getenv("MACROTRACKER_DB_DSN"), "PostgreSQL DSN")
 	flag.IntVar(&cfg.db.maxOpenConnections, "db-max-open-conn", 25, "PostgreSQL max open connections")
 	flag.IntVar(&cfg.db.maxIdleConns, "db-max-idle-conn", 25, "PostgreSQL max idle connections")
 	flag.StringVar(&cfg.db.maxIdleTime, "db-max-idle-time", "15m", "PostgreSQL max idle connections")
@@ -123,7 +123,7 @@ func openDB(cfg config) (*pgxpool.Pool, error) {
 	}
 
 	connConfig.MaxConns = int32(cfg.db.maxOpenConnections)
-	// connConfig.MaxIdleConns = int32(cfg.db.maxIdleConns)
+	// connConfig.MaxIdleConns = int32(cfg.db.maxIdleConns) # pgx doesn't implement maxidleconns
 
 	idleTime, err := time.ParseDuration(cfg.db.maxIdleTime)
 	if err != nil {
