@@ -1,1 +1,0 @@
-CREATE INDEX IF NOT EXISTS idx_recipecomponents_recipeid ON recipe_id USING BTREE(recipe_id);
