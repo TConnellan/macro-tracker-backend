@@ -26,6 +26,7 @@ func newTestDB(t *testing.T) *pgxpool.Pool {
 		t.Fatal(err)
 	}
 
+	// run migrations
 	goose.SetBaseFS(embedMigrations)
 
 	if err := goose.SetDialect("postgres"); err != nil {
@@ -40,7 +41,29 @@ func newTestDB(t *testing.T) *pgxpool.Pool {
 		panic(err)
 	}
 
+	// // run testdata setup
+	// script, err := os.ReadFile("./testdata/setup.sql")
+	// if err != nil {
+	// 	t.Fatal(err)
+	// }
+
+	// ctx, cancel := GetDefaultTimeoutContext()
+	// defer cancel()
+	// _, err = db.Exec(ctx, string(script))
+	// if err != nil {
+	// 	t.Fatal(err)
+	// }
+
 	t.Cleanup(func() {
+
+		// script, err := os.ReadFile("./testdata/teardown.sql")
+		// if err != nil {
+		// 	t.Fatal(err)
+		// }
+		// _, err = db.Exec(ctx, string(script))
+		// if err != nil {
+		// 	t.Fatal(err)
+		// }
 
 		sqldb := stdlib.OpenDBFromPool(db)
 		if err := goose.Down(sqldb, "goose_migrations"); err != nil {

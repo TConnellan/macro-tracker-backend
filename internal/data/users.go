@@ -94,7 +94,7 @@ type IUserModel interface {
 
 func (m UserModel) Insert(user *User) error {
 	query := `
-INSERT INTO users (name, email, password_hash)
+INSERT INTO users (username, email, password_hash)
 VALUES ($1, $2, $3)
 RETURNING id, created_at, version`
 
@@ -119,7 +119,7 @@ RETURNING id, created_at, version`
 func (m UserModel) Exists(id int) (bool, error) {
 	var exists bool
 
-	stmt := "SELECT EXISTS(SELECT true FROM users WHERE id =?)"
+	stmt := "SELECT EXISTS(SELECT true FROM users WHERE id =$1);"
 
 	ctx, cancel := GetDefaultTimeoutContext()
 	defer cancel()
@@ -131,7 +131,7 @@ func (m UserModel) Exists(id int) (bool, error) {
 
 func (m UserModel) GetByEmail(email string) (*User, error) {
 	query := `
-SELECT id, created_at, name, email, password_hash, version
+SELECT id, created_at, username, email, password_hash, version
 FROM users
 WHERE email = $1`
 	var user User
@@ -159,7 +159,7 @@ WHERE email = $1`
 func (m UserModel) Update(user *User) error {
 	query := `
 UPDATE users
-SET name = $1, email = $2, password_hash = $3, version = version + 1
+SET username = $1, email = $2, password_hash = $3, version = version + 1
 WHERE id = $5 AND version = $6
 RETURNING version`
 	args := []any{
