@@ -2,6 +2,7 @@ package data
 
 import (
 	"context"
+	"embed"
 	"testing"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -9,8 +10,8 @@ import (
 	"github.com/pressly/goose/v3"
 )
 
-// //go:embed migrations/*.sql
-// var embedMigrations embed.FS
+//go:embed goose_migrations/*.sql
+var embedMigrations embed.FS
 
 func newTestDB(t *testing.T) *pgxpool.Pool {
 
@@ -25,32 +26,32 @@ func newTestDB(t *testing.T) *pgxpool.Pool {
 		t.Fatal(err)
 	}
 
-	// goose.SetBaseFS(embedMigrations)
+	goose.SetBaseFS(embedMigrations)
 
 	if err := goose.SetDialect("postgres"); err != nil {
 		panic(err)
 	}
 
 	sqldb := stdlib.OpenDBFromPool(db)
-	if err := goose.Up(sqldb, "_migrations"); err != nil {
+	if err := goose.Up(sqldb, "goose_migrations"); err != nil {
 		panic(err)
 	}
 	if err := sqldb.Close(); err != nil {
 		panic(err)
 	}
 
-	// t.Cleanup(func() {
+	t.Cleanup(func() {
 
-	// 	sqldb := stdlib.OpenDBFromPool(db)
-	// 	if err := goose.Down(sqldb, "_migrations"); err != nil {
-	// 		panic(err)
-	// 	}
-	// 	if err := sqldb.Close(); err != nil {
-	// 		panic(err)
-	// 	}
+		sqldb := stdlib.OpenDBFromPool(db)
+		if err := goose.Down(sqldb, "goose_migrations"); err != nil {
+			panic(err)
+		}
+		if err := sqldb.Close(); err != nil {
+			panic(err)
+		}
 
-	// 	db.Close()
-	// })
+		db.Close()
+	})
 
 	return db
 }

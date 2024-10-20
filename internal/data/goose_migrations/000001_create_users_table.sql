@@ -8,13 +8,5 @@ CREATE TABLE IF NOT EXISTS users (
     version integer NOT NULL DEFAULT 1
 );
 
-for up_file in *.up.sql; do
-    down_file="${up_file%.up.sql}.down.sql"
-    if [ -f "$down_file" ]; then
-        echo -e "\n" >> "$up_file"
-        cat "$down_file" >> "$up_file"
-    fi
-done
-
 -- +goose Down
 DROP TABLE IF EXISTS users;
