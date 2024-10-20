@@ -13,10 +13,8 @@ ALTER TABLE pantry_items ADD CONSTRAINT fk_pantryitem_user FOREIGN KEY (user_id)
 ALTER TABLE pantry_items ADD CONSTRAINT fk_pantryitem_consumable FOREIGN KEY (consumable_id) REFERENCES consumables(id) ON DELETE RESTRICT;
 
 INSERT INTO pantry_items(user_id, consumable_id, name)
-VALUES (
-    SELECT DISTINCT RC.user_id, C.consumable_id, C.name
-    FROM recipe_components RC INNER JOIN consumables C ON RC.consumable_id = C.id
-);
+SELECT DISTINCT R.creator_id, C.id, C.name
+FROM recipes R INNER JOIN recipe_components RC ON R.id = RC.recipe_id INNER JOIN consumables C ON RC.consumable_id = C.id;
 
 ALTER TABLE recipe_components DROP CONSTRAINT fk_recipecomponent_consumable;
 
@@ -25,9 +23,9 @@ ALTER TABLE recipe_components RENAME COLUMN consumable_id TO pantry_item_id;
 ALTER TABLE recipe_components ADD CONSTRAINT 
 fk_recipecomponent_pantry_item FOREIGN KEY (pantry_item_id) REFERENCES pantry_items(id) ON DELETE RESTRICT;
 
-UPDATE recipe_components RC
+UPDATE recipe_components
 SET pantry_item_id = P.id
-FROM pantry_items P
-WHERE RC.user_id = P.user_id AND RC.consumable_id = P.consumable_id;
+FROM recipes R INNER JOIN recipe_components RC ON R.id = RC.recipe_id INNER JOIN pantry_items P ON R.creator_id = P.user_id
+WHERE RC.pantry_item_id = P.consumable_id;
 
 COMMIT;

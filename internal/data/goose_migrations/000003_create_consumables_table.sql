@@ -1,3 +1,5 @@
+-- +goose Up
+Begin;
 CREATE TABLE IF NOT EXISTS consumables (
    id INTEGER               PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
    creator_id INTEGER,
@@ -11,5 +13,10 @@ CREATE TABLE IF NOT EXISTS consumables (
    proteins  DOUBLE PRECISION,
    alcohol DOUBLE PRECISION
 );
-
+COMMIT;
 ALTER TABLE consumables ADD CONSTRAINT fk_consumable_creator FOREIGN KEY (creator_id) REFERENCES users(id) ON DELETE SET NULL;
+
+-- +goose Down
+ALTER TABLE consumables DROP CONSTRAINT IF EXISTS fk_consumable_creator;
+DROP TABLE IF EXISTS consumables CASCADE;
+

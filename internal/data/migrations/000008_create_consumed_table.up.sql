@@ -1,3 +1,4 @@
+BEGIN;
 CREATE TABLE IF NOT EXISTS consumed (
    id INTEGER               PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
    user_id INTEGER          NOT NULL,
@@ -13,5 +14,7 @@ CREATE TABLE IF NOT EXISTS consumed (
    notes TEXT
 );
 
-ALTER TABLE consumed ADD CONSTRAINT fk_consumed_consumerid FOREIGN KEY (user_id) REFERENCES user_profile(id) ON DELETE CASCADE;
-ALTER TABLE consumed ADD CONSTRAINT fk_consumed_recipeid FOREIGN KEY (recipe_id) REFERENCES recipe(id) ON DELETE SET NULL;
+COMMIT;
+
+ALTER TABLE consumed ADD CONSTRAINT fk_consumed_consumerid FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
+ALTER TABLE consumed ADD CONSTRAINT fk_consumed_recipeid FOREIGN KEY (recipe_id) REFERENCES recipes(id) ON DELETE SET NULL;
