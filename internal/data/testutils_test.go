@@ -13,7 +13,7 @@ import (
 //go:embed goose_migrations/*.sql
 var embedMigrations embed.FS
 
-func newTestDB(t *testing.T) *pgxpool.Pool {
+func newTestDB(t *testing.T, model string) *pgxpool.Pool {
 
 	connConfig, err := pgxpool.ParseConfig("postgresql://test_web:pass@localhost:5432/test_macrotracker")
 	if err != nil {
