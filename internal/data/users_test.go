@@ -1,6 +1,7 @@
 package data
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/tconnellan/macro-tracker-backend/internal/assert"
@@ -36,7 +37,10 @@ func TestUserModelExists(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			db := newTestDB(t, "users")
+			db, err := newTestDB(t, "users")
+			if err != nil {
+				t.Fatal(fmt.Errorf("Failed test db setup: %w", err))
+			}
 
 			m := UserModel{db}
 

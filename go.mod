@@ -2,6 +2,8 @@ module github.com/tconnellan/macro-tracker-backend
 
 go 1.22.3
 
+require github.com/google/uuid v1.6.0
+
 require gopkg.in/mail.v2 v2.3.1 // indirect
 
 require (
