@@ -61,9 +61,9 @@ func main() {
 	// re-enable with new defaults
 	// flag.StringVar(&cfg.smtp.host, "smtp-host", "sandbox.smtp.mailtrap.io", "SMTP host")
 	// flag.IntVar(&cfg.smtp.port, "smtp-port", 2525, "SMTP port")
-	// flag.StringVar(&cfg.smtp.username, "smtp-username", "6136cf491d04e3", "SMTP username")
-	// flag.StringVar(&cfg.smtp.password, "smtp-password", "faae129e4eac5b", "SMTP password")
-	// flag.StringVar(&cfg.smtp.sender, "smtp-sender", "Greenlight <no-reply@letsgo2.eb.com>", "SMTP sender")
+	// flag.StringVar(&cfg.smtp.username, "smtp-username", "", "SMTP username")
+	// flag.StringVar(&cfg.smtp.password, "smtp-password", "", "SMTP password")
+	// flag.StringVar(&cfg.smtp.sender, "smtp-sender", "MacroTracker <no-reply@<temp server>", "SMTP sender")
 
 	flag.Parse()
 
