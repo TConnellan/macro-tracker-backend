@@ -1,6 +1,7 @@
 package assert
 
 import (
+	"errors"
 	"strings"
 	"testing"
 )
@@ -26,4 +27,16 @@ func NilError(t *testing.T, actual error) {
 	if actual != nil {
 		t.Errorf("got: %v; expected: nil", actual)
 	}
+}
+
+func ExpectError(t *testing.T, err error, expected error) {
+	t.Helper()
+	if !errors.Is(err, expected) {
+		t.Errorf("got: %v; expected: %v", err, expected)
+	}
+}
+
+func FailWithError(t *testing.T, err error) {
+	t.Helper()
+	t.Errorf("encountered error: %v", err)
 }
