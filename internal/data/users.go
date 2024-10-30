@@ -2,6 +2,7 @@ package data
 
 import (
 	"errors"
+	"strings"
 	"time"
 
 	"github.com/jackc/pgx/v5"
@@ -106,7 +107,7 @@ RETURNING id, created_at, version`
 	err := m.DB.QueryRow(ctx, query, args...).Scan(&user.ID, &user.CreatedAt, &user.Version)
 	if err != nil {
 		switch {
-		case err.Error() == `pq: duplicate key value violates unique constraint "users_email_key"`:
+		case strings.HasPrefix(err.Error(), `ERROR: duplicate key value violates unique constraint "users_email_key"`):
 			return ErrDuplicateEmail
 		default:
 			return err
@@ -160,7 +161,7 @@ func (m UserModel) Update(user *User) error {
 	query := `
 UPDATE users
 SET username = $1, email = $2, password_hash = $3, version = version + 1
-WHERE id = $5 AND version = $6
+WHERE id = $4 AND version = $5
 RETURNING version`
 	args := []any{
 		user.Username,
@@ -174,7 +175,7 @@ RETURNING version`
 	err := m.DB.QueryRow(ctx, query, args...).Scan(&user.Version)
 	if err != nil {
 		switch {
-		case err.Error() == `pq: duplicate key value violates unique constraint "users_email_key"`:
+		case strings.HasPrefix(err.Error(), `ERROR: duplicate key value violates unique constraint "users_email_key"`):
 			return ErrDuplicateEmail
 		case errors.Is(err, pgx.ErrNoRows):
 			return ErrEditConflict
