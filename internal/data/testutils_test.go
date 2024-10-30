@@ -21,9 +21,6 @@ var embedMigrations embed.FS
 //go:embed testdata/setup.sql
 var setupSQL string
 
-// go: embed testdata/teardown.sql
-var teardownSQL string
-
 func newTestDB(t *testing.T, testName string) (*pgxpool.Pool, error) {
 
 	defaultDBDSN := os.Getenv("DEFAULT_DB_DSN")
@@ -43,18 +40,16 @@ func newTestDB(t *testing.T, testName string) (*pgxpool.Pool, error) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer defaultDB.Close()
 
-	// Construct the unique database name
+	// unique database name for each test
 	dbName := fmt.Sprintf("test_macrotracker_%s_%s", testName, uuid.NewString())
 
-	// Step 1: Create the database
 	_, err = defaultDB.Exec(ctx, fmt.Sprintf(`CREATE DATABASE %s WITH OWNER 'postgres' ENCODING 'UTF8' TABLESPACE 'pg_default';`, pq.QuoteIdentifier(dbName)))
 	if err != nil {
 		t.Fatal(fmt.Errorf("failed to create database: %w", err))
 	}
 
-	// create the user
+	// create the test user, ok if already exists
 	_, err = defaultDB.Exec(ctx, fmt.Sprintf(`CREATE USER %s WITH PASSWORD '%s';`, pq.QuoteIdentifier(testUser), pq.QuoteIdentifier(testPass)))
 	if err != nil {
 		if !strings.Contains(err.Error(), `role "`+testUser+`" already exists`) {
@@ -72,7 +67,7 @@ func newTestDB(t *testing.T, testName string) (*pgxpool.Pool, error) {
 		t.Fatal(err)
 	}
 
-	// Step 3: Execute parameterized queries within the new database
+	// grant test user perms on the test DB
 	_, err = testDB.Exec(ctx, fmt.Sprintf(`GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO %s; GRANT CREATE ON SCHEMA public TO %s; CREATE EXTENSION IF NOT EXISTS citext;`, testUser, testUser))
 	if err != nil {
 		t.Fatal(fmt.Errorf("error when granting user permissions to %s: %w", dbName, err))
@@ -84,6 +79,7 @@ func newTestDB(t *testing.T, testName string) (*pgxpool.Pool, error) {
 	}
 
 	// run migrations
+	goose.SetLogger(goose.NopLogger())
 	goose.SetBaseFS(embedMigrations)
 
 	if err := goose.SetDialect("postgres"); err != nil {
@@ -103,22 +99,14 @@ func newTestDB(t *testing.T, testName string) (*pgxpool.Pool, error) {
 		t.Fatal(err)
 	}
 
+	// remove db when finished
 	t.Cleanup(func() {
-		defer testDB.Close()
+		defer defaultDB.Close()
+		testDB.Close()
 
-		_, err = testDB.Exec(context.Background(), teardownSQL)
+		_, err = defaultDB.Exec(context.Background(), fmt.Sprintf(`DROP DATABASE %s;`, pq.QuoteIdentifier(dbName)))
 		if err != nil {
-			t.Fatal(err)
-		}
-
-		sqldb := stdlib.OpenDBFromPool(testDB)
-		defer func() {
-			if err := sqldb.Close(); err != nil {
-				t.Fatal(err)
-			}
-		}()
-		if err := goose.Down(sqldb, "goose_migrations"); err != nil {
-			t.Fatal(err)
+			t.Fatal(fmt.Errorf("error when dropping %s: %w", dbName, err))
 		}
 
 	})
