@@ -86,7 +86,7 @@ type IConsumableModel interface {
 }
 
 func (m ConsumableModel) GetByID(ID int64) (*Consumable, error) {
-	stmt := `SELECT id, name, creator_id, created_at, brand_name, size, units, carbs, fats, proteins, alcohol
+	stmt := `SELECT id, creator_id, created_at, name, brand_name, size, units, carbs, fats, proteins, alcohol
 	FROM consumables
 	WHERE id = $1`
 
@@ -171,6 +171,8 @@ func (m ConsumableModel) GetByCreatorID(ID int64, filters ConsumableFilters) ([]
 	LIMIT $2
 	OFFSET $3
 	`, filters.Metadata.sortColumn(), filters.Metadata.sortDirection())
+
+	fmt.Print(stmt, ID, filters.Metadata.pageLimit(), filters.Metadata.pageOffset())
 
 	ctx, cancel := GetDefaultTimeoutContext()
 	defer cancel()
