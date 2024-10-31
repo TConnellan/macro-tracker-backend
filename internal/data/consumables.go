@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/jackc/pgx/v5"
@@ -86,7 +87,7 @@ type IConsumableModel interface {
 }
 
 func (m ConsumableModel) GetByID(ID int64) (*Consumable, error) {
-	stmt := `SELECT id, name, creator_id, created_at, brand_name, size, units, carbs, fats, proteins, alcohol
+	stmt := `SELECT id, creator_id, created_at, name, brand_name, size, units, carbs, fats, proteins, alcohol
 	FROM consumables
 	WHERE id = $1`
 
@@ -228,6 +229,9 @@ func (m ConsumableModel) Insert(consumable *Consumable) error {
 	}
 
 	if err := m.DB.QueryRow(ctx, stmt, args...).Scan(&consumable.ID, &consumable.CreatedAt); err != nil {
+		if strings.HasPrefix(err.Error(), `ERROR: insert or update on table "consumables" violates foreign key constraint "fk_consumable_creator"`) {
+			return ErrReferencedUserDoesNotExist
+		}
 		return err
 	}
 
