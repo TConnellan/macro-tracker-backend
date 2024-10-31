@@ -9,6 +9,11 @@ INSERT INTO users (username, email, password_hash, created_at) VALUES (
  'Jack@email.com',
  '$2a$12$NuTjWXm3KKntReFwyBVHyuf/to.HEwTy.eS206TNfkGfr6HzGJSWG',
  '2024-01-01 10:00:00'    
+),(
+ 'user numero 3',
+ 'user3@email.com',
+ '$2a$12$NuTjWXm3KKntReFwyBVHyuf/to.HEwTy.eS206TNfkGfr6HzGJSWG',
+ '2024-01-01 10:00:00'    
 );
 
 INSERT INTO consumables (creator_id, created_at, name, brand_name, size, units, carbs, fats, proteins, alcohol) VALUES 
@@ -22,5 +27,10 @@ INSERT INTO consumables (creator_id, created_at, name, brand_name, size, units, 
 (2, '2024-01-01 10:00:00', 'Sweet Potato', 'Woolworths', 150, 'g', 27.5, 0.1, 2.0, 0),
 (2, '2024-01-01 10:00:00', 'Salmon Fillet', 'Tassal', 125, 'g', 0, 12.5, 25.0, 0),
 (2, '2024-01-01 10:00:00', 'Quinoa', 'Coles', 85, 'g', 15.6, 2.4, 4.8, 0),
-(2, '2024-01-01 10:00:00', 'Red Wine', 'Penfolds', 150, 'ml', 3.8, 0, 0, 13.5);
+(2, '2024-01-01 10:00:00', 'Red Wine', 'Penfolds', 150, 'ml', 3.8, 0, 0, 13.5),
+(3, '2024-01-01 10:00:00', 'Full Cream Milk', 'Dairy Farmers', 250, 'ml', 12.5, 8.8, 8.5, 0),
+(3, '2024-01-01 10:00:00', 'Skim Milk', 'Pauls', 250, 'ml', 12.8, 0.3, 8.8, 0),
+(3, '2024-01-01 10:00:00', 'Soy Milk', 'Sanitarium', 250, 'ml', 5.5, 3.2, 7.5, 0),
+(3, '2024-01-01 10:00:00', 'Oat Milk', 'Oatly', 250, 'ml', 16.0, 3.0, 1.0, 0),
+(3, '2024-01-01 10:00:00', 'Coconut Milk', 'Pure Harvest', 250, 'ml', 3.0, 5.0, 0.5, 0);
 COMMIT;

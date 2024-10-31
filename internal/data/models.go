@@ -10,8 +10,9 @@ import (
 )
 
 var (
-	ErrRecordNotFound = errors.New("record not found")
-	ErrEditConflict   = errors.New("edit conflict")
+	ErrRecordNotFound             = errors.New("record not found")
+	ErrEditConflict               = errors.New("edit conflict")
+	ErrReferencedUserDoesNotExist = errors.New("user doesn't exist")
 )
 
 type Models struct {

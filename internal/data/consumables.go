@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/jackc/pgx/v5"
@@ -172,8 +173,6 @@ func (m ConsumableModel) GetByCreatorID(ID int64, filters ConsumableFilters) ([]
 	OFFSET $3
 	`, filters.Metadata.sortColumn(), filters.Metadata.sortDirection())
 
-	fmt.Print(stmt, ID, filters.Metadata.pageLimit(), filters.Metadata.pageOffset())
-
 	ctx, cancel := GetDefaultTimeoutContext()
 	defer cancel()
 
@@ -230,6 +229,9 @@ func (m ConsumableModel) Insert(consumable *Consumable) error {
 	}
 
 	if err := m.DB.QueryRow(ctx, stmt, args...).Scan(&consumable.ID, &consumable.CreatedAt); err != nil {
+		if strings.HasPrefix(err.Error(), `ERROR: insert or update on table "consumables" violates foreign key constraint "fk_consumable_creator"`) {
+			return ErrReferencedUserDoesNotExist
+		}
 		return err
 	}
 
