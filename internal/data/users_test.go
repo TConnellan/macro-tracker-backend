@@ -78,7 +78,7 @@ func TestPasswordHelpers(t *testing.T) {
 
 			ValidatePasswordPlaintext(v, tt.pass)
 			if v.Valid() != tt.valid {
-				assert.Equal(t, v.Valid(), tt.valid)
+				assert.ValidatorValid(t, v)
 			}
 			if !v.Valid() {
 				return
@@ -96,6 +96,112 @@ func TestPasswordHelpers(t *testing.T) {
 			matches, err := actualPassword.Matches(tt.checkAgainst)
 			assert.ExpectError(t, err, tt.matchesError)
 			assert.Equal(t, matches, tt.matches)
+
+		})
+	}
+}
+
+func TestUserHelpers(t *testing.T) {
+
+	timeFormat := "2006-01-02 15:04:05"
+
+	tests := []struct {
+		name  string
+		pass  string
+		user  User
+		valid bool
+	}{
+		{
+			name:  "valid user",
+			pass:  "password1",
+			valid: true,
+			user: User{
+				ID:        1,
+				CreatedAt: MustParse(timeFormat, "2024-01-01 10:00:00"),
+				Username:  "john doe",
+				Email:     "John.Doe@gmail.com",
+				Password:  password{},
+				Version:   1,
+			},
+		},
+		{
+			name:  "valid user non ascii",
+			pass:  "password1",
+			valid: true,
+			user: User{
+				ID:        1,
+				CreatedAt: MustParse(timeFormat, "2024-01-01 10:00:00"),
+				Username:  "ギギ ジジ",
+				Email:     "user@email.jp",
+				Password:  password{},
+				Version:   1,
+			},
+		},
+		{
+			name:  "invalid username empty",
+			pass:  "password1",
+			valid: false,
+			user: User{
+				ID:        1,
+				CreatedAt: MustParse(timeFormat, "2024-01-01 10:00:00"),
+				Username:  "",
+				Email:     "John.Doe@gmail.com",
+				Password:  password{},
+				Version:   1,
+			},
+		},
+		{
+			name:  "valid username long",
+			pass:  "password1",
+			valid: true,
+			user: User{
+				ID:        1,
+				CreatedAt: MustParse(timeFormat, "2024-01-01 10:00:00"),
+				Username:  "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				Email:     "John.Doe@gmail.com",
+				Password:  password{},
+				Version:   1,
+			},
+		},
+		{
+			name:  "invalid username long",
+			pass:  "password1",
+			valid: false,
+			user: User{
+				ID:        1,
+				CreatedAt: MustParse(timeFormat, "2024-01-01 10:00:00"),
+				Username:  "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				Email:     "John.Doe@gmail.com",
+				Password:  password{},
+				Version:   1,
+			},
+		},
+		{
+			name:  "invalid username long due to runes",
+			pass:  "password1",
+			valid: false,
+			user: User{
+				ID:        1,
+				CreatedAt: MustParse(timeFormat, "2024-01-01 10:00:00"),
+				Username:  "ギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギ",
+				Email:     "John.Doe@gmail.com",
+				Password:  password{},
+				Version:   1,
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			tt.user.Password.Set(tt.pass)
+
+			v := validator.New()
+
+			ValidateUser(v, &tt.user)
+			if v.Valid() != tt.valid {
+				assert.ValidatorValid(t, v)
+			}
 
 		})
 	}
