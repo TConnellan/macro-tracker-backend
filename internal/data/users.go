@@ -45,7 +45,7 @@ func (p *password) Matches(plaintextPassword string) (bool, error) {
 		case errors.Is(err, bcrypt.ErrMismatchedHashAndPassword):
 			return false, nil
 		default:
-			return false, nil
+			return false, err
 		}
 	}
 

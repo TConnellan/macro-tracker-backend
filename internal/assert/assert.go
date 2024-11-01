@@ -4,6 +4,8 @@ import (
 	"errors"
 	"strings"
 	"testing"
+
+	"github.com/tconnellan/macro-tracker-backend/internal/validator"
 )
 
 func Equal[T comparable](t *testing.T, actual, expected T) {
@@ -47,4 +49,14 @@ func ExpectError(t *testing.T, err error, expected error) {
 func FailWithError(t *testing.T, err error) {
 	t.Helper()
 	t.Errorf("encountered error: %v", err)
+}
+
+func ValidatorValid(t *testing.T, validator *validator.Validator) {
+	t.Helper()
+	if !validator.Valid() {
+		for key, val := range validator.Errors {
+			t.Errorf("Invalid, key: %s, reason: %s", key, val)
+		}
+	}
+
 }

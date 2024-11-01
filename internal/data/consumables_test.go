@@ -3,15 +3,9 @@ package data
 import (
 	"fmt"
 	"testing"
-	"time"
 
 	"github.com/tconnellan/macro-tracker-backend/internal/assert"
 )
-
-func MustParse(layout, value string) time.Time {
-	t, _ := time.Parse(layout, value)
-	return t
-}
 
 func TestConsumableModelGetByID(t *testing.T) {
 

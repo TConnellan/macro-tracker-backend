@@ -7,6 +7,7 @@ import (
 	"os"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -112,4 +113,9 @@ func newTestDB(t *testing.T, testName string) (*pgxpool.Pool, error) {
 	})
 
 	return testDB, nil
+}
+
+func MustParse(layout, value string) time.Time {
+	t, _ := time.Parse(layout, value)
+	return t
 }
