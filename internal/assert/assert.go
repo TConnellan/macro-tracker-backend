@@ -51,12 +51,15 @@ func FailWithError(t *testing.T, err error) {
 	t.Errorf("encountered error: %v", err)
 }
 
-func ValidatorValid(t *testing.T, validator *validator.Validator) {
+func ValidatorValid(t *testing.T, validator *validator.Validator, expectValid bool) {
 	t.Helper()
-	if !validator.Valid() {
+	if !validator.Valid() && expectValid {
 		for key, val := range validator.Errors {
 			t.Errorf("Invalid, key: %s, reason: %s", key, val)
 		}
+	}
+	if validator.Valid() && !expectValid {
+		t.Error("Expected invalid, but was valid")
 	}
 
 }

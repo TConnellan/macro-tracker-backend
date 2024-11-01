@@ -5,7 +5,294 @@ import (
 	"testing"
 
 	"github.com/tconnellan/macro-tracker-backend/internal/assert"
+	"github.com/tconnellan/macro-tracker-backend/internal/validator"
 )
+
+func TestConsumableHelpers(t *testing.T) {
+
+	timeFormat := "2006-01-02 15:04:05"
+
+	tests := []struct {
+		name       string
+		valid      bool
+		consumable Consumable
+	}{
+		{
+			name:  "valid consumable",
+			valid: true,
+			consumable: Consumable{
+				ID:        1,
+				CreatorID: 1,
+				CreatedAt: MustParse(timeFormat, "2024-01-01 10:00:00"),
+				Name:      "Oats",
+				BrandName: "Uncle Tobys",
+				Size:      100,
+				Units:     "g",
+				Macros: Macronutrients{
+					Carbs:    40,
+					Fats:     0.5,
+					Proteins: 3,
+					Alcohol:  0,
+				},
+			},
+		},
+		{
+			name:  "valid consumable units grams",
+			valid: true,
+			consumable: Consumable{
+				ID:        1,
+				CreatorID: 1,
+				CreatedAt: MustParse(timeFormat, "2024-01-01 10:00:00"),
+				Name:      "Oats",
+				BrandName: "Uncle Tobys",
+				Size:      100,
+				Units:     "g",
+				Macros: Macronutrients{
+					Carbs:    40,
+					Fats:     0.5,
+					Proteins: 3,
+					Alcohol:  0,
+				},
+			},
+		},
+		{
+			name:  "valid consumable units ml",
+			valid: true,
+			consumable: Consumable{
+				ID:        1,
+				CreatorID: 1,
+				CreatedAt: MustParse(timeFormat, "2024-01-01 10:00:00"),
+				Name:      "Oats",
+				BrandName: "Uncle Tobys",
+				Size:      100,
+				Units:     "ml",
+				Macros: Macronutrients{
+					Carbs:    40,
+					Fats:     0.5,
+					Proteins: 3,
+					Alcohol:  0,
+				},
+			},
+		},
+		{
+			name:  "invalid consumable units",
+			valid: false,
+			consumable: Consumable{
+				ID:        1,
+				CreatorID: 1,
+				CreatedAt: MustParse(timeFormat, "2024-01-01 10:00:00"),
+				Name:      "Oats",
+				BrandName: "Uncle Tobys",
+				Size:      100,
+				Units:     "malarkey",
+				Macros: Macronutrients{
+					Carbs:    40,
+					Fats:     0.5,
+					Proteins: 3,
+					Alcohol:  0,
+				},
+			},
+		},
+		{
+			name:  "invalid consumable name empty",
+			valid: false,
+			consumable: Consumable{
+				ID:        1,
+				CreatorID: 1,
+				CreatedAt: MustParse(timeFormat, "2024-01-01 10:00:00"),
+				Name:      "",
+				BrandName: "Uncle Tobys",
+				Size:      100,
+				Units:     "g",
+				Macros: Macronutrients{
+					Carbs:    40,
+					Fats:     0.5,
+					Proteins: 3,
+					Alcohol:  0,
+				},
+			},
+		},
+		{
+			name:  "invalid consumable name too long",
+			valid: false,
+			consumable: Consumable{
+				ID:        1,
+				CreatorID: 1,
+				CreatedAt: MustParse(timeFormat, "2024-01-01 10:00:00"),
+				Name:      "oats oats oats oats oats oats oats oats oats oats oats",
+				BrandName: "Uncle Tobys",
+				Size:      100,
+				Units:     "g",
+				Macros: Macronutrients{
+					Carbs:    40,
+					Fats:     0.5,
+					Proteins: 3,
+					Alcohol:  0,
+				},
+			},
+		},
+		{
+			name:  "invalid consumable size negative",
+			valid: false,
+			consumable: Consumable{
+				ID:        1,
+				CreatorID: 1,
+				CreatedAt: MustParse(timeFormat, "2024-01-01 10:00:00"),
+				Name:      "oats",
+				BrandName: "Uncle Tobys",
+				Size:      -100,
+				Units:     "g",
+				Macros: Macronutrients{
+					Carbs:    40,
+					Fats:     0.5,
+					Proteins: 3,
+					Alcohol:  0,
+				},
+			},
+		},
+		{
+			name:  "invalid consumable size zero",
+			valid: false,
+			consumable: Consumable{
+				ID:        1,
+				CreatorID: 1,
+				CreatedAt: MustParse(timeFormat, "2024-01-01 10:00:00"),
+				Name:      "oats",
+				BrandName: "Uncle Tobys",
+				Size:      0,
+				Units:     "g",
+				Macros: Macronutrients{
+					Carbs:    40,
+					Fats:     0.5,
+					Proteins: 3,
+					Alcohol:  0,
+				},
+			},
+		},
+		{
+			name:  "invalid consumable no macros",
+			valid: false,
+			consumable: Consumable{
+				ID:        1,
+				CreatorID: 1,
+				CreatedAt: MustParse(timeFormat, "2024-01-01 10:00:00"),
+				Name:      "oats",
+				BrandName: "Uncle Tobys",
+				Size:      100,
+				Units:     "g",
+				Macros: Macronutrients{
+					Carbs:    0,
+					Fats:     0,
+					Proteins: 0,
+					Alcohol:  0,
+				},
+			},
+		},
+		{
+			name:  "invalid consumable negative carb",
+			valid: false,
+			consumable: Consumable{
+				ID:        1,
+				CreatorID: 1,
+				CreatedAt: MustParse(timeFormat, "2024-01-01 10:00:00"),
+				Name:      "oats",
+				BrandName: "Uncle Tobys",
+				Size:      100,
+				Units:     "g",
+				Macros: Macronutrients{
+					Carbs:    -1,
+					Fats:     0,
+					Proteins: 0,
+					Alcohol:  0,
+				},
+			},
+		},
+		{
+			name:  "invalid consumable negative fat",
+			valid: false,
+			consumable: Consumable{
+				ID:        1,
+				CreatorID: 1,
+				CreatedAt: MustParse(timeFormat, "2024-01-01 10:00:00"),
+				Name:      "oats",
+				BrandName: "Uncle Tobys",
+				Size:      100,
+				Units:     "g",
+				Macros: Macronutrients{
+					Carbs:    0,
+					Fats:     -1,
+					Proteins: 0,
+					Alcohol:  0,
+				},
+			},
+		},
+		{
+			name:  "invalid consumable negative protein",
+			valid: false,
+			consumable: Consumable{
+				ID:        1,
+				CreatorID: 1,
+				CreatedAt: MustParse(timeFormat, "2024-01-01 10:00:00"),
+				Name:      "oats",
+				BrandName: "Uncle Tobys",
+				Size:      100,
+				Units:     "g",
+				Macros: Macronutrients{
+					Carbs:    0,
+					Fats:     0,
+					Proteins: -1,
+					Alcohol:  0,
+				},
+			},
+		},
+		{
+			name:  "invalid consumable negative alcohol",
+			valid: false,
+			consumable: Consumable{
+				ID:        1,
+				CreatorID: 1,
+				CreatedAt: MustParse(timeFormat, "2024-01-01 10:00:00"),
+				Name:      "oats",
+				BrandName: "Uncle Tobys",
+				Size:      100,
+				Units:     "g",
+				Macros: Macronutrients{
+					Carbs:    0,
+					Fats:     0,
+					Proteins: 0,
+					Alcohol:  -1,
+				},
+			},
+		},
+		{
+			name:  "invalid consumable negative macros but positive sum",
+			valid: false,
+			consumable: Consumable{
+				ID:        1,
+				CreatorID: 1,
+				CreatedAt: MustParse(timeFormat, "2024-01-01 10:00:00"),
+				Name:      "oats",
+				BrandName: "Uncle Tobys",
+				Size:      100,
+				Units:     "g",
+				Macros: Macronutrients{
+					Carbs:    -1,
+					Fats:     -1,
+					Proteins: -1,
+					Alcohol:  20,
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			v := validator.New()
+			ValidateConsumable(v, &tt.consumable)
+			assert.ValidatorValid(t, v, tt.valid)
+		})
+	}
+}
 
 func TestConsumableModelGetByID(t *testing.T) {
 
