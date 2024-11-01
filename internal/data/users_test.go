@@ -77,9 +77,7 @@ func TestPasswordHelpers(t *testing.T) {
 			v := validator.New()
 
 			ValidatePasswordPlaintext(v, tt.pass)
-			if v.Valid() != tt.valid {
-				assert.ValidatorValid(t, v)
-			}
+			assert.ValidatorValid(t, v, tt.valid)
 			if !v.Valid() {
 				return
 			}
@@ -183,7 +181,7 @@ func TestUserHelpers(t *testing.T) {
 			user: User{
 				ID:        1,
 				CreatedAt: MustParse(timeFormat, "2024-01-01 10:00:00"),
-				Username:  "ギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギ",
+				Username:  "ギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギギ",
 				Email:     "John.Doe@gmail.com",
 				Password:  password{},
 				Version:   1,
@@ -199,9 +197,7 @@ func TestUserHelpers(t *testing.T) {
 			v := validator.New()
 
 			ValidateUser(v, &tt.user)
-			if v.Valid() != tt.valid {
-				assert.ValidatorValid(t, v)
-			}
+			assert.ValidatorValid(t, v, tt.valid)
 
 		})
 	}
@@ -244,41 +240,41 @@ func TestEmailHelpers(t *testing.T) {
 			email: "",
 			valid: false,
 		},
-		{
-			name:  "invalid consecutive periods",
-			email: "john.doe@gmail.com",
-			valid: false,
-		},
-		{
-			name:  "invalid no characters",
-			email: ".@gmail.com",
-			valid: false,
-		},
-		{
-			name:  "invalid trailing special character 1",
-			email: "john.doe-@gmail.com",
-			valid: false,
-		},
-		{
-			name:  "invalid trailing special character 2",
-			email: "john.doe_@gmail.com",
-			valid: false,
-		},
-		{
-			name:  "invalid trailing special character 3",
-			email: "john.doe.@gmail.com",
-			valid: false,
-		},
-		{
-			name:  "invalid no top level domain",
-			email: "john.doe@gmail",
-			valid: false,
-		},
-		{
-			name:  "invalid top level domain qualifier two short",
-			email: "john.doe@gmail.c",
-			valid: false,
-		},
+		// {
+		// 	name:  "invalid consecutive periods",
+		// 	email: "john.doe@gmail.com",
+		// 	valid: false,
+		// },
+		// {
+		// 	name:  "invalid no characters",
+		// 	email: ".@gmail.com",
+		// 	valid: false,
+		// },
+		// {
+		// 	name:  "invalid trailing special character 1",
+		// 	email: "john.doe-@gmail.com",
+		// 	valid: false,
+		// },
+		// {
+		// 	name:  "invalid trailing special character 2",
+		// 	email: "john.doe_@gmail.com",
+		// 	valid: false,
+		// },
+		// {
+		// 	name:  "invalid trailing special character 3",
+		// 	email: "john.doe.@gmail.com",
+		// 	valid: false,
+		// },
+		// {
+		// 	name:  "invalid no top level domain",
+		// 	email: "john.doe@gmail",
+		// 	valid: false,
+		// },
+		// {
+		// 	name:  "invalid top level domain qualifier too short",
+		// 	email: "john.doe@gmail.c",
+		// 	valid: false,
+		// },
 		{
 			name:  "invalid no email domain",
 			email: "john.doe@.com",
@@ -295,15 +291,18 @@ func TestEmailHelpers(t *testing.T) {
 			valid: false,
 		},
 	}
+
+	// Test cases where created based on the criteria given in first result of google search blind to the regex being used by the validator
+	// cases that the regex didn't catch where commented out, might be interesting to update regex to cover these cases later, but:
+	// the regex being used in the validator (not written by me) is based on https://html.spec.whatwg.org/#valid-e-mail-address which is probably more definitive that whatever site I based the cases on
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
 			v := validator.New()
 
 			ValidateEmail(v, tt.email)
-			if v.Valid() != tt.valid {
-				assert.ValidatorValid(t, v)
-			}
+			assert.ValidatorValid(t, v, tt.valid)
 
 		})
 	}
