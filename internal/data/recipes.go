@@ -49,9 +49,6 @@ func ValidateComponentConsumableList(v *validator.Validator, recipeID int64, rec
 		// sort recipeComponents based on StepNo, mirroring the alterations
 		// in pantryItems and consumables. Check that step numbers are valid
 		for i < n {
-			v.Check(recipeComponents[i].PantryItemID == pantryItems[i].ID, "recipe_steps", fmt.Sprintf("consumable ids of step %d must match", recipeComponents[i].PantryItemID))
-			v.Check(pantryItems[i].ConsumableId == consumables[i].ID, "recipe_steps", fmt.Sprintf("consumable ids of step %d must match", recipeComponents[i].PantryItemID))
-			v.Check(recipeComponents[i].RecipeID == recipeID, "recipe_id", "must be the same for all steps")
 
 			for recipeComponents[i].StepNo != i+1 {
 
@@ -71,6 +68,10 @@ func ValidateComponentConsumableList(v *validator.Validator, recipeID int64, rec
 				pantryItems[i], pantryItems[actualIndex] = pantryItems[actualIndex], pantryItems[i]
 				consumables[i], consumables[actualIndex] = consumables[actualIndex], consumables[i]
 			}
+
+			v.Check(recipeComponents[i].PantryItemID == pantryItems[i].ID, "recipe_steps", fmt.Sprintf("pantry item ids of step %d must match", recipeComponents[i].StepNo))
+			v.Check(pantryItems[i].ConsumableId == consumables[i].ID, "recipe_steps", fmt.Sprintf("consumable ids of step %d must match", recipeComponents[i].StepNo))
+			v.Check(recipeComponents[i].RecipeID == recipeID, "recipe_id", "must be the same for all steps")
 
 			i += 1
 		}
