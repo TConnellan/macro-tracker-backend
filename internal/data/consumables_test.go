@@ -345,7 +345,7 @@ func TestConsumableModelGetByID(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			db, err := newTestDB(t, "users")
+			db, err := newTestDB(t, "recipes")
 			if err != nil {
 				t.Fatal(fmt.Errorf("Failed test db setup: %w", err))
 			}
@@ -743,7 +743,7 @@ func TestGetByCreatorID(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			db, err := newTestDB(t, "users")
+			db, err := newTestDB(t, "recipes")
 			if err != nil {
 				t.Fatal(fmt.Errorf("Failed test db setup: %w", err))
 			}
@@ -1192,7 +1192,7 @@ func TestConsumableModelSearch(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			db, err := newTestDB(t, "users")
+			db, err := newTestDB(t, "recipes")
 			if err != nil {
 				t.Fatal(fmt.Errorf("Failed test db setup: %w", err))
 			}
@@ -1270,7 +1270,7 @@ func TestConsumableModelInsert(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			db, err := newTestDB(t, "users")
+			db, err := newTestDB(t, "recipes")
 			if err != nil {
 				t.Fatal(fmt.Errorf("Failed test db setup: %w", err))
 			}
@@ -1319,7 +1319,7 @@ func TestConsumableModelDelete(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			db, err := newTestDB(t, "users")
+			db, err := newTestDB(t, "recipes")
 			if err != nil {
 				t.Fatal(fmt.Errorf("Failed test db setup: %w", err))
 			}

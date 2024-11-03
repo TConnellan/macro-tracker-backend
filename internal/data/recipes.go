@@ -1,7 +1,6 @@
 package data
 
 import (
-	"database/sql"
 	"errors"
 	"fmt"
 	"time"
@@ -117,7 +116,7 @@ type RecipeModel struct {
 
 func (m RecipeModel) Get(ID int64) (*Recipe, error) {
 	stmt := `
-	SELECT id, recipe_name, creator_id, created_at, last_edited_at, notes, parent_recipe_id, is_latest
+	SELECT id, recipe_name, creator_id, created_at, last_edited_at, notes, COALESCE(parent_recipe_id, 0), is_latest
 	FROM recipes
 	WHERE id = $1
 	`
@@ -140,7 +139,7 @@ func (m RecipeModel) Get(ID int64) (*Recipe, error) {
 
 	if err != nil {
 		switch {
-		case errors.Is(err, sql.ErrNoRows):
+		case errors.Is(err, pgx.ErrNoRows):
 			return nil, ErrRecordNotFound
 		default:
 			return nil, err
@@ -280,7 +279,7 @@ func (m RecipeModel) GetFullRecipe(ID int64) (*FullRecipe, error) {
 		&recipe.IsLatest,
 	); err != nil {
 		switch {
-		case errors.Is(err, sql.ErrNoRows):
+		case errors.Is(err, pgx.ErrNoRows):
 			return nil, ErrRecordNotFound
 		default:
 			return nil, err
@@ -577,7 +576,7 @@ func getParentRecipe(childRecipe *Recipe, db psqlDB) (*Recipe, error) {
 	err := db.QueryRow(ctx, stmt, childRecipe.ParentRecipeID).Scan(args...)
 	if err != nil {
 		switch {
-		case errors.Is(err, sql.ErrNoRows):
+		case errors.Is(err, pgx.ErrNoRows):
 			return nil, ErrRecordNotFound
 		default:
 			return nil, err

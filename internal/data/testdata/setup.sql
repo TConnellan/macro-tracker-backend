@@ -33,4 +33,10 @@ INSERT INTO consumables (creator_id, created_at, name, brand_name, size, units, 
 (3, '2024-01-01 10:00:00', 'Soy Milk', 'Sanitarium', 250, 'ml', 5.5, 3.2, 7.5, 0),
 (3, '2024-01-01 10:00:00', 'Oat Milk', 'Oatly', 250, 'ml', 16.0, 3.0, 1.0, 0),
 (3, '2024-01-01 10:00:00', 'Coconut Milk', 'Pure Harvest', 250, 'ml', 3.0, 5.0, 0.5, 0);
+
+
+INSERT INTO recipes (recipe_name, creator_id, created_at, last_edited_at, notes, parent_recipe_id, is_latest) VALUES 
+('Lasagne', 1, '2024-01-01 10:00:00', '2024-01-01 10:00:00', 'a recipe', NULL, 'true');
+
+
 COMMIT;

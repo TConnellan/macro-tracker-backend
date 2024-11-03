@@ -1,6 +1,7 @@
 package data
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/tconnellan/macro-tracker-backend/internal/assert"
@@ -883,4 +884,62 @@ func TestFullRecipeHelpers(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestRecipeModelGet(t *testing.T) {
+
+	timeFormat := "2006-01-02 15:04:05"
+
+	if testing.Short() {
+		t.Skip("models: skipping integration test")
+	}
+
+	tests := []struct {
+		name         string
+		ID           int64
+		expectError  error
+		expectRecipe Recipe
+	}{
+		{
+			name:        "existing recipe",
+			ID:          1,
+			expectError: nil,
+			expectRecipe: Recipe{
+				ID:             1,
+				Name:           "Lasagne",
+				CreatorID:      1,
+				CreatedAt:      MustParse(timeFormat, "2024-01-01 10:00:00"),
+				LastEditedAt:   MustParse(timeFormat, "2024-01-01 10:00:00"),
+				Notes:          "a recipe",
+				ParentRecipeID: 0,
+				IsLatest:       true,
+			},
+		},
+		{
+			name:        "non-existing recipe",
+			ID:          99999,
+			expectError: ErrRecordNotFound,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			db, err := newTestDB(t, "recipe")
+			if err != nil {
+				t.Fatal(fmt.Errorf("Failed test db setup: %w", err))
+			}
+			m := RecipeModel{db}
+
+			recipe, err := m.Get(tt.ID)
+
+			assert.ExpectError(t, err, tt.expectError)
+			if err != nil {
+				return
+			}
+			assert.Equal(t, *recipe, tt.expectRecipe)
+
+		})
+	}
+
 }
