@@ -1653,7 +1653,7 @@ func TestRecipeModelGetLatestByCreatorID(t *testing.T) {
 	}
 }
 
-func TestGetFullRecipe(t *testing.T) {
+func TestRecipeModelGetFullRecipe(t *testing.T) {
 
 	timeFormat := "2006-01-02 15:04:05"
 
@@ -1789,7 +1789,7 @@ func TestGetFullRecipe(t *testing.T) {
 	}
 }
 
-func TestInsert(t *testing.T) {
+func TestRecipeModelInsert(t *testing.T) {
 
 	timeFormat := "2006-01-02 15:04:05"
 
@@ -1888,7 +1888,7 @@ func TestInsert(t *testing.T) {
 	}
 }
 
-func TestInsertFullRecipe(t *testing.T) {
+func TestRecipeModelInsertFullRecipe(t *testing.T) {
 
 	timeFormat := "2006-01-02 15:04:05"
 
@@ -2169,7 +2169,7 @@ func TestInsertFullRecipe(t *testing.T) {
 	}
 }
 
-func TestUpdate(t *testing.T) {
+func TestRecipeModelUpdate(t *testing.T) {
 
 	timeFormat := "2006-01-02 15:04:05"
 
@@ -2243,7 +2243,7 @@ func TestUpdate(t *testing.T) {
 	}
 }
 
-func TestUpdateFullRecipe(t *testing.T) {
+func TestRecipeModelUpdateFullRecipe(t *testing.T) {
 
 	timeFormat := "2006-01-02 15:04:05"
 
@@ -2527,7 +2527,7 @@ func TestUpdateFullRecipe(t *testing.T) {
 	}
 }
 
-func TestDelete(t *testing.T) {
+func TestRecipeModelDelete(t *testing.T) {
 
 	if testing.Short() {
 		t.Skip("models: skipping integration test")
@@ -2587,7 +2587,7 @@ func TestDelete(t *testing.T) {
 	}
 }
 
-func TestGetParentRecipe(t *testing.T) {
+func TestRecipeModelGetParentRecipe(t *testing.T) {
 
 	timeFormat := "2006-01-02 15:04:05"
 
@@ -2690,7 +2690,7 @@ func TestGetParentRecipe(t *testing.T) {
 	}
 }
 
-func TestGetAllAncestors(t *testing.T) {
+func TestRecipeModelGetAllAncestors(t *testing.T) {
 
 	timeFormat := "2006-01-02 15:04:05"
 

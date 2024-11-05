@@ -16,6 +16,7 @@ var (
 	ErrParentRecipeDoesNotExist   = errors.New("parent recipe doesn't exist")
 	ErrPantryItemDoesNotExist     = errors.New("pantry item does not exist")
 	ErrChildRecipeExists          = errors.New("child recipe exists")
+	ErrRecipeDoesNotExist         = errors.New("recipe does not exists")
 )
 
 type Models struct {

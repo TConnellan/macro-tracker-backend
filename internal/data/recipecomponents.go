@@ -2,6 +2,7 @@ package data
 
 import (
 	"errors"
+	"strings"
 	"time"
 
 	"github.com/jackc/pgx/v5"
@@ -92,6 +93,12 @@ func (m RecipeComponentModel) Insert(recipeComponent *RecipeComponent) error {
 		&recipeComponent.CreatedAt,
 	)
 	if err != nil {
+		switch {
+		case strings.HasPrefix(err.Error(), "ERROR: insert or update on table \"recipe_components\" violates foreign key constraint \"fk_recipecomponent_recipe\""):
+			return ErrRecipeDoesNotExist
+		case strings.HasPrefix(err.Error(), "ERROR: insert or update on table \"recipe_components\" violates foreign key constraint \"fk_recipecomponent_pantry_item\""):
+			return ErrPantryItemDoesNotExist
+		}
 		return err
 	}
 
@@ -100,6 +107,8 @@ func (m RecipeComponentModel) Insert(recipeComponent *RecipeComponent) error {
 
 func (m RecipeComponentModel) Update(recipeComponent *RecipeComponent) error {
 	//components should be functionally immutable except for description which we will allow to change
+	//a component modified further than the description will constitute a new version of the recipe
+	//capability exposed via recipes/UpdateFullRecipe
 	stmt := `
 	UPDATE recipe_components
 	SET step_description = $2
