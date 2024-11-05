@@ -2,6 +2,7 @@ package data
 
 import (
 	"errors"
+	"strings"
 	"time"
 
 	"github.com/jackc/pgx/v5"
@@ -183,7 +184,7 @@ func (m ConsumedModel) Insert(consumed *Consumed) error {
 		consumed.Macros.Proteins,
 		consumed.Macros.Alcohol,
 		consumed.ConsumedAt,
-		consumed.LastEditedAt,
+		consumed.Notes,
 	}
 
 	err := m.DB.QueryRow(ctx, stmt, args...).Scan(
@@ -193,6 +194,12 @@ func (m ConsumedModel) Insert(consumed *Consumed) error {
 	)
 
 	if err != nil {
+		switch {
+		case strings.HasPrefix(err.Error(), "ERROR: insert or update on table \"consumed\" violates foreign key constraint \"fk_consumed_recipeid\""):
+			return ErrRecipeDoesNotExist
+		case strings.HasPrefix(err.Error(), "ERROR: insert or update on table \"consumed\" violates foreign key constraint \"fk_consumed_consumerid\""):
+			return ErrReferencedUserDoesNotExist
+		}
 		return err
 	}
 
@@ -222,6 +229,12 @@ func (m ConsumedModel) Update(consumed *Consumed) error {
 
 	result, err := m.DB.Exec(ctx, stmt, args...)
 	if err != nil {
+		switch {
+		case strings.HasPrefix(err.Error(), "ERROR: insert or update on table \"consumed\" violates foreign key constraint \"fk_consumed_recipeid\""):
+			return ErrRecipeDoesNotExist
+		case strings.HasPrefix(err.Error(), "ERROR: insert or update on table \"consumed\" violates foreign key constraint \"fk_consumed_consumerid\""):
+			return ErrReferencedUserDoesNotExist
+		}
 		return err
 	}
 
