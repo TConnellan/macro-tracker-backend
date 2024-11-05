@@ -1657,6 +1657,10 @@ func TestGetFullRecipe(t *testing.T) {
 
 	timeFormat := "2006-01-02 15:04:05"
 
+	if testing.Short() {
+		t.Skip("models: skipping integration test")
+	}
+
 	tests := []struct {
 		name             string
 		ID               int64
@@ -1789,6 +1793,10 @@ func TestInsert(t *testing.T) {
 
 	timeFormat := "2006-01-02 15:04:05"
 
+	if testing.Short() {
+		t.Skip("models: skipping integration test")
+	}
+
 	tests := []struct {
 		name        string
 		expectError error
@@ -1883,6 +1891,10 @@ func TestInsert(t *testing.T) {
 func TestInsertFullRecipe(t *testing.T) {
 
 	timeFormat := "2006-01-02 15:04:05"
+
+	if testing.Short() {
+		t.Skip("models: skipping integration test")
+	}
 
 	tests := []struct {
 		name        string
@@ -2161,6 +2173,10 @@ func TestUpdate(t *testing.T) {
 
 	timeFormat := "2006-01-02 15:04:05"
 
+	if testing.Short() {
+		t.Skip("models: skipping integration test")
+	}
+
 	tests := []struct {
 		name        string
 		ID          int64
@@ -2230,6 +2246,10 @@ func TestUpdate(t *testing.T) {
 func TestUpdateFullRecipe(t *testing.T) {
 
 	timeFormat := "2006-01-02 15:04:05"
+
+	if testing.Short() {
+		t.Skip("models: skipping integration test")
+	}
 
 	tests := []struct {
 		name          string
@@ -2508,6 +2528,11 @@ func TestUpdateFullRecipe(t *testing.T) {
 }
 
 func TestDelete(t *testing.T) {
+
+	if testing.Short() {
+		t.Skip("models: skipping integration test")
+	}
+
 	tests := []struct {
 		name        string
 		expectError error
@@ -2565,6 +2590,10 @@ func TestDelete(t *testing.T) {
 func TestGetParentRecipe(t *testing.T) {
 
 	timeFormat := "2006-01-02 15:04:05"
+
+	if testing.Short() {
+		t.Skip("models: skipping integration test")
+	}
 
 	tests := []struct {
 		name         string
@@ -2664,6 +2693,10 @@ func TestGetParentRecipe(t *testing.T) {
 func TestGetAllAncestors(t *testing.T) {
 
 	timeFormat := "2006-01-02 15:04:05"
+
+	if testing.Short() {
+		t.Skip("models: skipping integration test")
+	}
 
 	tests := []struct {
 		name            string
