@@ -260,17 +260,18 @@ func (m RecipeModel) GetLatestByCreatorID(ID int64, filters RecipeFilters) ([]*R
 func (m RecipeModel) GetFullRecipe(ID int64) (*FullRecipe, error) {
 	// join recipe on componets first, then join components on consumables
 	stmtRecipe := `
-	SELECT id, recipe_name, creator_id, created_at, last_edited_at, notes, parent_recipe_id, is_latest
+	SELECT id, recipe_name, creator_id, created_at, last_edited_at, notes, COALESCE(parent_recipe_id, 0), is_latest
 	FROM recipes
 	WHERE id = $1
 	`
 
 	stmtComponents := `
-	SELECT RC.id, RC.recipe_id, RC.pantry_item_id, RC.created-at, RC.quantity, RC.step_no, RC.step_description, P.id, P.user_id, P.consumable_id, P.name, P.created_at, P.last_edited_at, C.id, C.creator_id, C.created_at, C.name, C.brand_name, C.size, C.units, C.carbs, c.fats, C.proteins, C.alcohol
+	SELECT RC.id, RC.recipe_id, RC.pantry_item_id, RC.created_at, RC.quantity, RC.step_no, RC.step_description, P.id, P.user_id, P.consumable_id, P.name, P.created_at, P.last_modified, C.id, C.creator_id, C.created_at, C.name, C.brand_name, C.size, C.units, C.carbs, C.fats, C.proteins, C.alcohol
 	FROM recipe_components RC 
 	     INNER JOIN pantry_items P ON RC.pantry_item_id = P.id
 		 INNER JOIN consumables C ON P.consumable_id = C.id
 	WHERE RC.recipe_id = $1
+	ORDER BY RC.step_no ASC
 	`
 
 	ctx, cancel := GetDefaultTimeoutContext()
@@ -373,10 +374,24 @@ func insertRecipe(recipe *Recipe, db psqlDB) error {
 	ctx, cancel := GetDefaultTimeoutContext()
 	defer cancel()
 
-	err := db.QueryRow(ctx, stmt, recipe.Name, recipe.CreatorID, recipe.Notes, recipe.ParentRecipeID, recipe.IsLatest).Scan(&recipe.ID, &recipe.CreatedAt, &recipe.LastEditedAt)
+	var actualParentID any
+	if recipe.ParentRecipeID == 0 {
+		actualParentID = nil
+	} else {
+		actualParentID = recipe.ParentRecipeID
+	}
+
+	err := db.QueryRow(ctx, stmt, recipe.Name, recipe.CreatorID, recipe.Notes, actualParentID, recipe.IsLatest).Scan(&recipe.ID, &recipe.CreatedAt, &recipe.LastEditedAt)
 
 	if err != nil {
-		return err
+		switch {
+		case strings.HasPrefix(err.Error(), "ERROR: insert or update on table \"recipes\" violates foreign key constraint \"fk_recipe_creator\""):
+			return ErrReferencedUserDoesNotExist
+		case strings.HasPrefix(err.Error(), "ERROR: insert or update on table \"recipes\" violates foreign key constraint \"recipe_child_parent_id\""):
+			return ErrParentRecipeDoesNotExist
+		default:
+			return err
+		}
 	}
 
 	return nil
@@ -440,6 +455,10 @@ func insertFullRecipe(fullRecipe *FullRecipe, db psqlDB) error {
 			}, nil
 		}))
 	if err != nil {
+		switch {
+		case strings.HasPrefix(err.Error(), "ERROR: insert or update on table \"recipe_components\" violates foreign key constraint \"fk_recipecomponent_pantry_item\""):
+			return ErrPantryItemDoesNotExist
+		}
 		return err
 	}
 
@@ -460,7 +479,7 @@ func updateRecipe(recipe *Recipe, conn psqlDB) error {
 	ctx, cancel := GetDefaultTimeoutContext()
 	defer cancel()
 
-	result, err := conn.Exec(ctx, stmt, recipe.ID, recipe.Name, recipe.Notes)
+	result, err := conn.Exec(ctx, stmt, recipe.ID, recipe.Name, recipe.Notes, recipe.IsLatest)
 	if err != nil {
 		return err
 	}
@@ -492,6 +511,8 @@ func (m RecipeModel) UpdateFullRecipe(fullRecipe *FullRecipe) error {
 	if err != nil {
 		return err
 	}
+
+	fullRecipe.Recipe.IsLatest = true
 
 	err = insertFullRecipe(fullRecipe, txn)
 	if err != nil {
@@ -544,6 +565,10 @@ func (m RecipeModel) Delete(ID int64) error {
 
 	result, err := txn.Exec(ctx, stmtRecipe, ID)
 	if err != nil {
+		switch {
+		case strings.HasPrefix(err.Error(), "ERROR: update or delete on table \"recipes\" violates foreign key constraint \"recipe_child_parent_id\" on table \"recipes\""):
+			return ErrChildRecipeExists
+		}
 		return err
 	}
 	rows := result.RowsAffected()
@@ -566,10 +591,10 @@ func (m RecipeModel) GetParentRecipe(childRecipe *Recipe) (*Recipe, error) {
 
 func getParentRecipe(childRecipe *Recipe, db psqlDB) (*Recipe, error) {
 	if childRecipe.ParentRecipeID == 0 {
-		return nil, nil
+		return nil, ErrRecordNotFound
 	}
 	stmt := `
-	SELECT id, recipe_name, creator_id, created_at, last_edited_at, notes, parent_recipe_id, is_latest
+	SELECT id, recipe_name, creator_id, created_at, last_edited_at, notes, COALESCE(parent_recipe_id, 0), is_latest
 	FROM recipes
 	WHERE id = $1
 	`
@@ -607,15 +632,18 @@ func (m RecipeModel) GetAllAncestors(childRecipe *Recipe, filters RecipeFilters)
 
 	stmt := fmt.Sprintf(`
 	WITH RECURSIVE ancestors(id, recipe_name, creator_id, created_at, last_edited_at, notes, parent_recipe_id, is_latest) AS (
-		SELECT id, recipe_name, creator_id, created_at, last_edited_at, notes, parent_recipe_id, is_latest
+		SELECT id, recipe_name, creator_id, created_at, last_edited_at, notes, COALESCE(parent_recipe_id, 0) AS parent_recipe_id, is_latest
 		FROM recipes
 		WHERE id = $1
 		UNION
-		SELECT id, recipe_name, creator_id, created_at, last_edited_at, notes, parent_recipe_id, is_latest
+		SELECT R.id, R.recipe_name, R.creator_id, R.created_at, R.last_edited_at, R.notes, COALESCE(R.parent_recipe_id, 0) AS parent_recipe_id, R.is_latest
 		FROM recipes R INNER JOIN ancestors A ON R.id = A.parent_recipe_id
+	), counted_ancestors AS (
+		SELECT COUNT(*) OVER() as total_count, id, recipe_name, creator_id, created_at, last_edited_at, notes, parent_recipe_id, is_latest
+		FROM ancestors
 	)
-	SELECT COUNT(*) OVER(), id, recipe_name, creator_id, created_at,as last_edited_at, notes, AS parent_recipe_id, is_latest
-	FROM ancestors
+	SELECT total_count, id, recipe_name, creator_id, created_at, last_edited_at, notes, parent_recipe_id, is_latest
+	FROM counted_ancestors
 	ORDER BY %s %s, id ASC
 	LIMIT $2
 	OFFSET $3
@@ -655,6 +683,10 @@ func (m RecipeModel) GetAllAncestors(childRecipe *Recipe, filters RecipeFilters)
 
 	if err = rows.Err(); err != nil {
 		return nil, Metadata{}, err
+	}
+
+	if len(ancestors) == 0 {
+		return nil, Metadata{}, ErrRecordNotFound
 	}
 
 	return ancestors, calculateMetadata(recordCount, filters.Metadata.Page, filters.Metadata.PageSize), nil
