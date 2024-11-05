@@ -916,6 +916,16 @@ func TestRecipeModelGet(t *testing.T) {
 			},
 		},
 		{
+			name:        "non-existing recipe Bad ID",
+			ID:          -1,
+			expectError: ErrRecordNotFound,
+		},
+		{
+			name:        "non-existing recipe Zero ID",
+			ID:          0,
+			expectError: ErrRecordNotFound,
+		},
+		{
 			name:        "non-existing recipe",
 			ID:          99999,
 			expectError: ErrRecordNotFound,
@@ -941,5 +951,704 @@ func TestRecipeModelGet(t *testing.T) {
 
 		})
 	}
+}
 
+func TestRecipeModelGetByCreatorID(t *testing.T) {
+
+	timeFormat := "2006-01-02 15:04:05"
+
+	if testing.Short() {
+		t.Skip("models: skipping integration test")
+	}
+
+	tests := []struct {
+		name           string
+		creatorID      int64
+		filters        RecipeFilters
+		expectError    error
+		expectRecipes  []*Recipe
+		expectMetadata Metadata
+	}{
+		{
+			name:      "existing recipe",
+			creatorID: 1,
+			filters: RecipeFilters{
+				Metadata: MetadataFilters{
+					Page:         1,
+					PageSize:     100,
+					Sort:         "ID",
+					SortSafeList: []string{"ID"},
+				},
+				NameSearch: "",
+			},
+			expectError: nil,
+			expectMetadata: Metadata{
+				CurrentPage:  1,
+				PageSize:     100,
+				FirstPage:    1,
+				LastPage:     1,
+				TotalRecords: 1,
+			},
+			expectRecipes: []*Recipe{
+				{
+					ID:             1,
+					Name:           "Lasagne",
+					CreatorID:      1,
+					CreatedAt:      MustParse(timeFormat, "2024-01-01 10:00:00"),
+					LastEditedAt:   MustParse(timeFormat, "2024-01-01 10:00:00"),
+					Notes:          "a recipe",
+					ParentRecipeID: 0,
+					IsLatest:       true,
+				},
+			},
+		},
+		{
+			name:      "existing recipes multiple",
+			creatorID: 2,
+			filters: RecipeFilters{
+				Metadata: MetadataFilters{
+					Page:         1,
+					PageSize:     100,
+					Sort:         "ID",
+					SortSafeList: []string{"ID"},
+				},
+				NameSearch: "",
+			},
+			expectError: nil,
+			expectMetadata: Metadata{
+				CurrentPage:  1,
+				PageSize:     100,
+				FirstPage:    1,
+				LastPage:     1,
+				TotalRecords: 4,
+			},
+			expectRecipes: []*Recipe{
+				{
+					ID:             2,
+					Name:           "recipe2",
+					CreatorID:      2,
+					CreatedAt:      MustParse(timeFormat, "2024-01-01 10:00:00"),
+					LastEditedAt:   MustParse(timeFormat, "2024-01-01 10:00:00"),
+					Notes:          "a recipe 2",
+					ParentRecipeID: 0,
+					IsLatest:       true,
+				},
+				{
+					ID:             3,
+					Name:           "recipe3",
+					CreatorID:      2,
+					CreatedAt:      MustParse(timeFormat, "2024-01-01 10:00:00"),
+					LastEditedAt:   MustParse(timeFormat, "2024-01-01 10:00:00"),
+					Notes:          "a recipe 3",
+					ParentRecipeID: 0,
+					IsLatest:       true,
+				},
+				{
+					ID:             5,
+					Name:           "Recipe5",
+					CreatorID:      2,
+					CreatedAt:      MustParse(timeFormat, "2024-01-01 10:00:00"),
+					LastEditedAt:   MustParse(timeFormat, "2024-01-01 10:00:00"),
+					Notes:          "a recipe 5",
+					ParentRecipeID: 0,
+					IsLatest:       true,
+				},
+				{
+					ID:             6,
+					Name:           "doesntmatchsearch",
+					CreatorID:      2,
+					CreatedAt:      MustParse(timeFormat, "2024-01-01 10:00:00"),
+					LastEditedAt:   MustParse(timeFormat, "2024-01-01 10:00:00"),
+					Notes:          "not matching",
+					ParentRecipeID: 0,
+					IsLatest:       true,
+				},
+			},
+		},
+		{
+			name:      "existing recipes multiple search",
+			creatorID: 2,
+			filters: RecipeFilters{
+				Metadata: MetadataFilters{
+					Page:         1,
+					PageSize:     100,
+					Sort:         "ID",
+					SortSafeList: []string{"ID"},
+				},
+				NameSearch: "recipe",
+			},
+			expectError: nil,
+			expectMetadata: Metadata{
+				CurrentPage:  1,
+				PageSize:     100,
+				FirstPage:    1,
+				LastPage:     1,
+				TotalRecords: 3,
+			},
+			expectRecipes: []*Recipe{
+				{
+					ID:             2,
+					Name:           "recipe2",
+					CreatorID:      2,
+					CreatedAt:      MustParse(timeFormat, "2024-01-01 10:00:00"),
+					LastEditedAt:   MustParse(timeFormat, "2024-01-01 10:00:00"),
+					Notes:          "a recipe 2",
+					ParentRecipeID: 0,
+					IsLatest:       true,
+				},
+				{
+					ID:             3,
+					Name:           "recipe3",
+					CreatorID:      2,
+					CreatedAt:      MustParse(timeFormat, "2024-01-01 10:00:00"),
+					LastEditedAt:   MustParse(timeFormat, "2024-01-01 10:00:00"),
+					Notes:          "a recipe 3",
+					ParentRecipeID: 0,
+					IsLatest:       true,
+				},
+				{
+					ID:             5,
+					Name:           "Recipe5",
+					CreatorID:      2,
+					CreatedAt:      MustParse(timeFormat, "2024-01-01 10:00:00"),
+					LastEditedAt:   MustParse(timeFormat, "2024-01-01 10:00:00"),
+					Notes:          "a recipe 5",
+					ParentRecipeID: 0,
+					IsLatest:       true,
+				},
+			},
+		},
+		{
+			name:      "existing recipes multiple limit",
+			creatorID: 2,
+			filters: RecipeFilters{
+				Metadata: MetadataFilters{
+					Page:         1,
+					PageSize:     2,
+					Sort:         "ID",
+					SortSafeList: []string{"ID"},
+				},
+				NameSearch: "",
+			},
+			expectError: nil,
+			expectMetadata: Metadata{
+				CurrentPage:  1,
+				PageSize:     2,
+				FirstPage:    1,
+				LastPage:     2,
+				TotalRecords: 4,
+			},
+			expectRecipes: []*Recipe{
+				{
+					ID:             2,
+					Name:           "recipe2",
+					CreatorID:      2,
+					CreatedAt:      MustParse(timeFormat, "2024-01-01 10:00:00"),
+					LastEditedAt:   MustParse(timeFormat, "2024-01-01 10:00:00"),
+					Notes:          "a recipe 2",
+					ParentRecipeID: 0,
+					IsLatest:       true,
+				},
+				{
+					ID:             3,
+					Name:           "recipe3",
+					CreatorID:      2,
+					CreatedAt:      MustParse(timeFormat, "2024-01-01 10:00:00"),
+					LastEditedAt:   MustParse(timeFormat, "2024-01-01 10:00:00"),
+					Notes:          "a recipe 3",
+					ParentRecipeID: 0,
+					IsLatest:       true,
+				},
+			},
+		},
+		{
+			name:      "existing recipes multiple limit and offset",
+			creatorID: 2,
+			filters: RecipeFilters{
+				Metadata: MetadataFilters{
+					Page:         2,
+					PageSize:     2,
+					Sort:         "ID",
+					SortSafeList: []string{"ID"},
+				},
+				NameSearch: "",
+			},
+			expectError: nil,
+			expectMetadata: Metadata{
+				CurrentPage:  2,
+				PageSize:     2,
+				FirstPage:    1,
+				LastPage:     2,
+				TotalRecords: 4,
+			},
+			expectRecipes: []*Recipe{
+				{
+					ID:             5,
+					Name:           "Recipe5",
+					CreatorID:      2,
+					CreatedAt:      MustParse(timeFormat, "2024-01-01 10:00:00"),
+					LastEditedAt:   MustParse(timeFormat, "2024-01-01 10:00:00"),
+					Notes:          "a recipe 5",
+					ParentRecipeID: 0,
+					IsLatest:       true,
+				},
+				{
+					ID:             6,
+					Name:           "doesntmatchsearch",
+					CreatorID:      2,
+					CreatedAt:      MustParse(timeFormat, "2024-01-01 10:00:00"),
+					LastEditedAt:   MustParse(timeFormat, "2024-01-01 10:00:00"),
+					Notes:          "not matching",
+					ParentRecipeID: 0,
+					IsLatest:       true,
+				},
+			},
+		},
+		{
+			name:      "existing recipe with parent",
+			creatorID: 3,
+			filters: RecipeFilters{
+				Metadata: MetadataFilters{
+					Page:         1,
+					PageSize:     100,
+					Sort:         "ID",
+					SortSafeList: []string{"ID"},
+				},
+				NameSearch: "",
+			},
+			expectError: nil,
+			expectMetadata: Metadata{
+				CurrentPage:  1,
+				PageSize:     100,
+				FirstPage:    1,
+				LastPage:     1,
+				TotalRecords: 1,
+			},
+			expectRecipes: []*Recipe{
+				{
+					ID:             4,
+					Name:           "recipe4",
+					CreatorID:      3,
+					CreatedAt:      MustParse(timeFormat, "2024-01-01 10:00:00"),
+					LastEditedAt:   MustParse(timeFormat, "2024-01-01 10:00:00"),
+					Notes:          "a recipe 4",
+					ParentRecipeID: 1,
+					IsLatest:       true,
+				},
+			},
+		},
+		{
+			name:      "non-existing recipes Bad Creator ID",
+			creatorID: -1,
+			filters: RecipeFilters{
+				Metadata: MetadataFilters{
+					Page:         1,
+					PageSize:     100,
+					Sort:         "ID",
+					SortSafeList: []string{"ID"},
+				},
+				NameSearch: "",
+			},
+			expectError: nil,
+		},
+		{
+			name:      "non-existing recipes Zero Creator ID",
+			creatorID: 0,
+			filters: RecipeFilters{
+				Metadata: MetadataFilters{
+					Page:         1,
+					PageSize:     100,
+					Sort:         "ID",
+					SortSafeList: []string{"ID"},
+				},
+				NameSearch: "",
+			},
+			expectError: nil,
+		},
+		{
+			name:      "non-existing recipes",
+			creatorID: 99999,
+			filters: RecipeFilters{
+				Metadata: MetadataFilters{
+					Page:         1,
+					PageSize:     100,
+					Sort:         "ID",
+					SortSafeList: []string{"ID"},
+				},
+				NameSearch: "",
+			},
+			expectError: nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			db, err := newTestDB(t, "recipe")
+			if err != nil {
+				t.Fatal(fmt.Errorf("Failed test db setup: %w", err))
+			}
+			m := RecipeModel{db}
+
+			recipes, metadata, err := m.GetByCreatorID(tt.creatorID, tt.filters)
+
+			assert.ExpectError(t, err, tt.expectError)
+			if err != nil {
+				return
+			}
+			assert.SliceEqual(t, recipes, tt.expectRecipes)
+			assert.Equal(t, metadata, tt.expectMetadata)
+
+		})
+	}
+}
+
+func TestRecipeModelGetLatestByCreatorID(t *testing.T) {
+
+	timeFormat := "2006-01-02 15:04:05"
+
+	if testing.Short() {
+		t.Skip("models: skipping integration test")
+	}
+
+	tests := []struct {
+		name           string
+		creatorID      int64
+		filters        RecipeFilters
+		expectError    error
+		expectRecipes  []*Recipe
+		expectMetadata Metadata
+	}{
+		{
+			name:      "existing recipe",
+			creatorID: 1,
+			filters: RecipeFilters{
+				Metadata: MetadataFilters{
+					Page:         1,
+					PageSize:     100,
+					Sort:         "ID",
+					SortSafeList: []string{"ID"},
+				},
+				NameSearch: "",
+			},
+			expectError: nil,
+			expectMetadata: Metadata{
+				CurrentPage:  1,
+				PageSize:     100,
+				FirstPage:    1,
+				LastPage:     1,
+				TotalRecords: 1,
+			},
+			expectRecipes: []*Recipe{
+				{
+					ID:             1,
+					Name:           "Lasagne",
+					CreatorID:      1,
+					CreatedAt:      MustParse(timeFormat, "2024-01-01 10:00:00"),
+					LastEditedAt:   MustParse(timeFormat, "2024-01-01 10:00:00"),
+					Notes:          "a recipe",
+					ParentRecipeID: 0,
+					IsLatest:       true,
+				},
+			},
+		},
+		{
+			name:      "existing recipes multiple",
+			creatorID: 2,
+			filters: RecipeFilters{
+				Metadata: MetadataFilters{
+					Page:         1,
+					PageSize:     100,
+					Sort:         "ID",
+					SortSafeList: []string{"ID"},
+				},
+				NameSearch: "",
+			},
+			expectError: nil,
+			expectMetadata: Metadata{
+				CurrentPage:  1,
+				PageSize:     100,
+				FirstPage:    1,
+				LastPage:     1,
+				TotalRecords: 4,
+			},
+			expectRecipes: []*Recipe{
+				{
+					ID:             2,
+					Name:           "recipe2",
+					CreatorID:      2,
+					CreatedAt:      MustParse(timeFormat, "2024-01-01 10:00:00"),
+					LastEditedAt:   MustParse(timeFormat, "2024-01-01 10:00:00"),
+					Notes:          "a recipe 2",
+					ParentRecipeID: 0,
+					IsLatest:       true,
+				},
+				{
+					ID:             3,
+					Name:           "recipe3",
+					CreatorID:      2,
+					CreatedAt:      MustParse(timeFormat, "2024-01-01 10:00:00"),
+					LastEditedAt:   MustParse(timeFormat, "2024-01-01 10:00:00"),
+					Notes:          "a recipe 3",
+					ParentRecipeID: 0,
+					IsLatest:       true,
+				},
+				{
+					ID:             5,
+					Name:           "Recipe5",
+					CreatorID:      2,
+					CreatedAt:      MustParse(timeFormat, "2024-01-01 10:00:00"),
+					LastEditedAt:   MustParse(timeFormat, "2024-01-01 10:00:00"),
+					Notes:          "a recipe 5",
+					ParentRecipeID: 0,
+					IsLatest:       true,
+				},
+				{
+					ID:             6,
+					Name:           "doesntmatchsearch",
+					CreatorID:      2,
+					CreatedAt:      MustParse(timeFormat, "2024-01-01 10:00:00"),
+					LastEditedAt:   MustParse(timeFormat, "2024-01-01 10:00:00"),
+					Notes:          "not matching",
+					ParentRecipeID: 0,
+					IsLatest:       true,
+				},
+			},
+		},
+		{
+			name:      "existing recipes multiple search",
+			creatorID: 2,
+			filters: RecipeFilters{
+				Metadata: MetadataFilters{
+					Page:         1,
+					PageSize:     100,
+					Sort:         "ID",
+					SortSafeList: []string{"ID"},
+				},
+				NameSearch: "recipe",
+			},
+			expectError: nil,
+			expectMetadata: Metadata{
+				CurrentPage:  1,
+				PageSize:     100,
+				FirstPage:    1,
+				LastPage:     1,
+				TotalRecords: 3,
+			},
+			expectRecipes: []*Recipe{
+				{
+					ID:             2,
+					Name:           "recipe2",
+					CreatorID:      2,
+					CreatedAt:      MustParse(timeFormat, "2024-01-01 10:00:00"),
+					LastEditedAt:   MustParse(timeFormat, "2024-01-01 10:00:00"),
+					Notes:          "a recipe 2",
+					ParentRecipeID: 0,
+					IsLatest:       true,
+				},
+				{
+					ID:             3,
+					Name:           "recipe3",
+					CreatorID:      2,
+					CreatedAt:      MustParse(timeFormat, "2024-01-01 10:00:00"),
+					LastEditedAt:   MustParse(timeFormat, "2024-01-01 10:00:00"),
+					Notes:          "a recipe 3",
+					ParentRecipeID: 0,
+					IsLatest:       true,
+				},
+				{
+					ID:             5,
+					Name:           "Recipe5",
+					CreatorID:      2,
+					CreatedAt:      MustParse(timeFormat, "2024-01-01 10:00:00"),
+					LastEditedAt:   MustParse(timeFormat, "2024-01-01 10:00:00"),
+					Notes:          "a recipe 5",
+					ParentRecipeID: 0,
+					IsLatest:       true,
+				},
+			},
+		},
+		{
+			name:      "existing recipes multiple limit",
+			creatorID: 2,
+			filters: RecipeFilters{
+				Metadata: MetadataFilters{
+					Page:         1,
+					PageSize:     2,
+					Sort:         "ID",
+					SortSafeList: []string{"ID"},
+				},
+				NameSearch: "",
+			},
+			expectError: nil,
+			expectMetadata: Metadata{
+				CurrentPage:  1,
+				PageSize:     2,
+				FirstPage:    1,
+				LastPage:     2,
+				TotalRecords: 4,
+			},
+			expectRecipes: []*Recipe{
+				{
+					ID:             2,
+					Name:           "recipe2",
+					CreatorID:      2,
+					CreatedAt:      MustParse(timeFormat, "2024-01-01 10:00:00"),
+					LastEditedAt:   MustParse(timeFormat, "2024-01-01 10:00:00"),
+					Notes:          "a recipe 2",
+					ParentRecipeID: 0,
+					IsLatest:       true,
+				},
+				{
+					ID:             3,
+					Name:           "recipe3",
+					CreatorID:      2,
+					CreatedAt:      MustParse(timeFormat, "2024-01-01 10:00:00"),
+					LastEditedAt:   MustParse(timeFormat, "2024-01-01 10:00:00"),
+					Notes:          "a recipe 3",
+					ParentRecipeID: 0,
+					IsLatest:       true,
+				},
+			},
+		},
+		{
+			name:      "existing recipes multiple limit and offset",
+			creatorID: 2,
+			filters: RecipeFilters{
+				Metadata: MetadataFilters{
+					Page:         2,
+					PageSize:     2,
+					Sort:         "ID",
+					SortSafeList: []string{"ID"},
+				},
+				NameSearch: "",
+			},
+			expectError: nil,
+			expectMetadata: Metadata{
+				CurrentPage:  2,
+				PageSize:     2,
+				FirstPage:    1,
+				LastPage:     2,
+				TotalRecords: 4,
+			},
+			expectRecipes: []*Recipe{
+				{
+					ID:             5,
+					Name:           "Recipe5",
+					CreatorID:      2,
+					CreatedAt:      MustParse(timeFormat, "2024-01-01 10:00:00"),
+					LastEditedAt:   MustParse(timeFormat, "2024-01-01 10:00:00"),
+					Notes:          "a recipe 5",
+					ParentRecipeID: 0,
+					IsLatest:       true,
+				},
+				{
+					ID:             6,
+					Name:           "doesntmatchsearch",
+					CreatorID:      2,
+					CreatedAt:      MustParse(timeFormat, "2024-01-01 10:00:00"),
+					LastEditedAt:   MustParse(timeFormat, "2024-01-01 10:00:00"),
+					Notes:          "not matching",
+					ParentRecipeID: 0,
+					IsLatest:       true,
+				},
+			},
+		},
+		{
+			name:      "existing recipe with parent",
+			creatorID: 3,
+			filters: RecipeFilters{
+				Metadata: MetadataFilters{
+					Page:         1,
+					PageSize:     100,
+					Sort:         "ID",
+					SortSafeList: []string{"ID"},
+				},
+				NameSearch: "",
+			},
+			expectError: nil,
+			expectMetadata: Metadata{
+				CurrentPage:  1,
+				PageSize:     100,
+				FirstPage:    1,
+				LastPage:     1,
+				TotalRecords: 1,
+			},
+			expectRecipes: []*Recipe{
+				{
+					ID:             4,
+					Name:           "recipe4",
+					CreatorID:      3,
+					CreatedAt:      MustParse(timeFormat, "2024-01-01 10:00:00"),
+					LastEditedAt:   MustParse(timeFormat, "2024-01-01 10:00:00"),
+					Notes:          "a recipe 4",
+					ParentRecipeID: 1,
+					IsLatest:       true,
+				},
+			},
+		},
+		{
+			name:      "non-existing recipes Bad Creator ID",
+			creatorID: -1,
+			filters: RecipeFilters{
+				Metadata: MetadataFilters{
+					Page:         1,
+					PageSize:     100,
+					Sort:         "ID",
+					SortSafeList: []string{"ID"},
+				},
+				NameSearch: "",
+			},
+			expectError: nil,
+		},
+		{
+			name:      "non-existing recipes Zero Creator ID",
+			creatorID: 0,
+			filters: RecipeFilters{
+				Metadata: MetadataFilters{
+					Page:         1,
+					PageSize:     100,
+					Sort:         "ID",
+					SortSafeList: []string{"ID"},
+				},
+				NameSearch: "",
+			},
+			expectError: nil,
+		},
+		{
+			name:      "non-existing recipes",
+			creatorID: 99999,
+			filters: RecipeFilters{
+				Metadata: MetadataFilters{
+					Page:         1,
+					PageSize:     100,
+					Sort:         "ID",
+					SortSafeList: []string{"ID"},
+				},
+				NameSearch: "",
+			},
+			expectError: nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			db, err := newTestDB(t, "recipe")
+			if err != nil {
+				t.Fatal(fmt.Errorf("Failed test db setup: %w", err))
+			}
+			m := RecipeModel{db}
+
+			recipes, metadata, err := m.GetLatestByCreatorID(tt.creatorID, tt.filters)
+
+			assert.ExpectError(t, err, tt.expectError)
+			if err != nil {
+				return
+			}
+			assert.SliceEqual(t, recipes, tt.expectRecipes)
+			assert.Equal(t, metadata, tt.expectMetadata)
+
+		})
+	}
 }

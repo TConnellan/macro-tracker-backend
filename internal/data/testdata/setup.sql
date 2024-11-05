@@ -36,7 +36,12 @@ INSERT INTO consumables (creator_id, created_at, name, brand_name, size, units, 
 
 
 INSERT INTO recipes (recipe_name, creator_id, created_at, last_edited_at, notes, parent_recipe_id, is_latest) VALUES 
-('Lasagne', 1, '2024-01-01 10:00:00', '2024-01-01 10:00:00', 'a recipe', NULL, 'true');
+('Lasagne', 1, '2024-01-01 10:00:00', '2024-01-01 10:00:00', 'a recipe', NULL, 'true'),
+('recipe2', 2, '2024-01-01 10:00:00', '2024-01-01 10:00:00', 'a recipe 2', NULL, 'true'),
+('recipe3', 2, '2024-01-01 10:00:00', '2024-01-01 10:00:00', 'a recipe 3', NULL, 'true'),
+('recipe4', 3, '2024-01-01 10:00:00', '2024-01-01 10:00:00', 'a recipe 4', 1, 'true'),
+('Recipe5', 2, '2024-01-01 10:00:00', '2024-01-01 10:00:00', 'a recipe 5', NULL, 'true'),
+('doesntmatchsearch', 2, '2024-01-01 10:00:00', '2024-01-01 10:00:00', 'not matching', NULL, 'true');
 
 
 COMMIT;

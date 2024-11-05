@@ -3,6 +3,7 @@ package data
 import (
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/jackc/pgx/v5"
@@ -96,6 +97,15 @@ type RecipeFilters struct {
 	NameSearch string
 }
 
+func (r RecipeFilters) getSearchVariable() string {
+	trimmedSearchVariable := strings.TrimSpace(r.NameSearch)
+	if trimmedSearchVariable == "" {
+		return ""
+	}
+
+	return fmt.Sprintf("%%%s%%", trimmedSearchVariable)
+}
+
 type IRecipeModel interface {
 	Get(int64) (*Recipe, error)
 	GetByCreatorID(int64, RecipeFilters) ([]*Recipe, Metadata, error)
@@ -151,10 +161,10 @@ func (m RecipeModel) Get(ID int64) (*Recipe, error) {
 
 func (m RecipeModel) GetByCreatorID(ID int64, filters RecipeFilters) ([]*Recipe, Metadata, error) {
 	stmt := fmt.Sprintf(`
-	SELECT COUNT(*) OVER(), id, recipe_name, creator_id, created_at, last_edited_at, notes, parent_recipe_id, is_latest
+	SELECT COUNT(*) OVER(), id, recipe_name, creator_id, created_at, last_edited_at, notes, COALESCE(parent_recipe_id, 0), is_latest
 	FROM recipes
-	WHERE ID = $1
-	  AND $2 = "" or recipe_name LIKE $2
+	WHERE creator_id = $1
+	  AND ($2 = '' or recipe_name ILIKE $2)
 	ORDER BY %s %s, id ASC
 	LIMIT $3
 	OFFSET $4
@@ -163,7 +173,7 @@ func (m RecipeModel) GetByCreatorID(ID int64, filters RecipeFilters) ([]*Recipe,
 	ctx, cancel := GetDefaultTimeoutContext()
 	defer cancel()
 
-	rows, err := m.DB.Query(ctx, stmt, ID, filters.NameSearch, filters.Metadata.pageLimit(), filters.Metadata.pageOffset())
+	rows, err := m.DB.Query(ctx, stmt, ID, filters.getSearchVariable(), filters.Metadata.pageLimit(), filters.Metadata.pageOffset())
 	if err != nil {
 		return nil, Metadata{}, err
 	}
@@ -200,10 +210,10 @@ func (m RecipeModel) GetByCreatorID(ID int64, filters RecipeFilters) ([]*Recipe,
 
 func (m RecipeModel) GetLatestByCreatorID(ID int64, filters RecipeFilters) ([]*Recipe, Metadata, error) {
 	stmt := fmt.Sprintf(`
-	SELECT COUNT(*) OVER(), id, recipe_name, creator_id, created_at, last_edited_at, notes, parent_recipe_id, is_latest
+	SELECT COUNT(*) OVER(), id, recipe_name, creator_id, created_at, last_edited_at, notes, COALESCE(parent_recipe_id, 0), is_latest
 	FROM recipes
-	WHERE ID = $1 AND is_latest = TRUE
-	  AND $2 = "" or recipe_name LIKE $2
+	WHERE creator_id = $1 AND is_latest = TRUE
+	  AND ($2 = '' or recipe_name ILIKE $2)
 	ORDER BY %s %s, id ASC
 	LIMIT $3
 	OFFSET $4
@@ -212,7 +222,7 @@ func (m RecipeModel) GetLatestByCreatorID(ID int64, filters RecipeFilters) ([]*R
 	ctx, cancel := GetDefaultTimeoutContext()
 	defer cancel()
 
-	rows, err := m.DB.Query(ctx, stmt, ID, filters.NameSearch, filters.Metadata.pageLimit(), filters.Metadata.pageOffset())
+	rows, err := m.DB.Query(ctx, stmt, ID, filters.getSearchVariable(), filters.Metadata.pageLimit(), filters.Metadata.pageOffset())
 	if err != nil {
 		return nil, Metadata{}, err
 	}
@@ -266,9 +276,15 @@ func (m RecipeModel) GetFullRecipe(ID int64) (*FullRecipe, error) {
 	ctx, cancel := GetDefaultTimeoutContext()
 	defer cancel()
 
+	txn, err := m.DB.BeginTx(ctx, pgx.TxOptions{IsoLevel: pgx.TxIsoLevel(pgx.ReadCommitted), AccessMode: pgx.ReadOnly, DeferrableMode: pgx.NotDeferrable})
+	if err != nil {
+		return nil, err
+	}
+	defer txn.Rollback(ctx)
+
 	var recipe Recipe
 
-	if err := m.DB.QueryRow(ctx, stmtRecipe, ID).Scan(
+	if err := txn.QueryRow(ctx, stmtRecipe, ID).Scan(
 		&recipe.ID,
 		&recipe.Name,
 		&recipe.CreatorID,
@@ -286,7 +302,7 @@ func (m RecipeModel) GetFullRecipe(ID int64) (*FullRecipe, error) {
 		}
 	}
 
-	rows, err := m.DB.Query(ctx, stmtComponents, ID)
+	rows, err := txn.Query(ctx, stmtComponents, ID)
 	if err != nil {
 		return nil, err
 	}
@@ -337,6 +353,7 @@ func (m RecipeModel) GetFullRecipe(ID int64) (*FullRecipe, error) {
 	if err = rows.Err(); err != nil {
 		return nil, err
 	}
+	txn.Commit(ctx)
 
 	return &FullRecipe{Recipe: recipe, RecipeComponents: components, PantryItems: pantryItems, Consumables: consumables}, nil
 
