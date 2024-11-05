@@ -63,3 +63,21 @@ func ValidatorValid(t *testing.T, validator *validator.Validator, expectValid bo
 	}
 
 }
+
+func SliceEqual[T comparable](t *testing.T, actualSlice []*T, expectedSlice []*T) {
+	t.Helper()
+	if len(actualSlice) != len(expectedSlice) {
+		t.Errorf("Slice length mismatch. Expect length: %d, actual length: %d\nactual: %#v", len(expectedSlice), len(actualSlice), actualSlice)
+		for i, v := range actualSlice {
+			t.Errorf("actual value: index %d, value: %#v", i, *v)
+		}
+
+	} else {
+		for i, expected := range expectedSlice {
+			actual := actualSlice[i]
+			if *actual != *expected {
+				t.Errorf("Mismatch of slice values at index %d. Expect: %#v, actual: %#v", i, expected, actual)
+			}
+		}
+	}
+}

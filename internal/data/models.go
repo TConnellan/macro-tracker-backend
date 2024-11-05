@@ -13,6 +13,9 @@ var (
 	ErrRecordNotFound             = errors.New("record not found")
 	ErrEditConflict               = errors.New("edit conflict")
 	ErrReferencedUserDoesNotExist = errors.New("user doesn't exist")
+	ErrParentRecipeDoesNotExist   = errors.New("parent recipe doesn't exist")
+	ErrPantryItemDoesNotExist     = errors.New("pantry item does not exist")
+	ErrChildRecipeExists          = errors.New("child recipe exists")
 )
 
 type Models struct {
