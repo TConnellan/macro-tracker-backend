@@ -17,6 +17,11 @@ func (app *application) contextSetUser(r *http.Request, user *data.User) *http.R
 	return r.WithContext(ctx)
 }
 
+// exists for tests, need to pass context into httptest.NewRequestWithContext which creates and executes request
+func (app *application) testContextSetUser(ctx context.Context, user *data.User) context.Context {
+	return context.WithValue(ctx, userContextKey, user)
+}
+
 func (app *application) contextGetUser(r *http.Request) *data.User {
 	user, ok := r.Context().Value(userContextKey).(*data.User)
 	if !ok {

@@ -91,7 +91,7 @@ func (m ConsumedModel) GetAllByUserID(userID int64) ([]*Consumed, error) {
 	}
 	defer rows.Close()
 
-	var allConsumed []*Consumed
+	allConsumed := []*Consumed{}
 
 	for rows.Next() {
 		var consumed Consumed

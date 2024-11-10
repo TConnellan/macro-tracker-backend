@@ -369,9 +369,6 @@ func TestConsumedModelGetAllByUserID(t *testing.T) {
 			consumed, err := m.GetAllByUserID(tt.ID)
 
 			assert.ExpectError(t, err, tt.expectError)
-			if err != nil {
-				return
-			}
 
 			assert.SliceEqual(t, consumed, tt.expectConsumed)
 		})
