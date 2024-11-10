@@ -25,6 +25,12 @@ type password struct {
 	hash      []byte
 }
 
+var AnonymousUser = &User{}
+
+func (u *User) IsAnonymous() bool {
+	return u == AnonymousUser
+}
+
 func (p *password) Set(plaintextPassword string) error {
 	hash, err := bcrypt.GenerateFromPassword([]byte(plaintextPassword), 12)
 	if err != nil {
@@ -91,6 +97,7 @@ type IUserModel interface {
 	Exists(int) (bool, error)
 	GetByEmail(string) (*User, error)
 	Update(*User) error
+	GetForToken(string, string) (*User, error)
 }
 
 func (m UserModel) Insert(user *User) error {
@@ -127,7 +134,6 @@ func (m UserModel) Exists(id int) (bool, error) {
 
 	err := m.DB.QueryRow(ctx, stmt, id).Scan(&exists)
 	return exists, err
-
 }
 
 func (m UserModel) GetByEmail(email string) (*User, error) {
@@ -157,6 +163,27 @@ WHERE email = $1`
 	return &user, nil
 }
 
+func (m UserModel) Authenticate(email string, password string) (*User, error) {
+
+	user, err := m.GetByEmail(email)
+	if err != nil {
+		switch {
+		case errors.Is(err, ErrRecordNotFound):
+			return nil, ErrInvalidCredentials
+		default:
+			return nil, err
+		}
+	}
+
+	check, err := user.Password.Matches(password)
+	if err != nil || !check {
+		return nil, ErrInvalidCredentials
+	}
+
+	return user, nil
+
+}
+
 func (m UserModel) Update(user *User) error {
 	query := `
 UPDATE users
@@ -184,4 +211,39 @@ RETURNING version`
 		}
 	}
 	return nil
+}
+
+func (m UserModel) GetForToken(tokenScope string, tokenPlaintext string) (*User, error) {
+
+	query := `
+	SELECT U.id, U.created_at, U.username, U.email, U.password_hash, U.version
+	FROM users U INNER JOIN tokens T ON U.id = T.user_id
+	WHERE T.hash = $1 AND T.scope = $2 AND T.expiry > $3;
+	`
+
+	tokenHash := hashToken(tokenPlaintext)
+
+	var user User
+
+	ctx, cancel := GetDefaultTimeoutContext()
+	defer cancel()
+
+	err := m.DB.QueryRow(ctx, query, tokenHash[:], tokenScope, time.Now()).Scan(
+		&user.ID,
+		&user.CreatedAt,
+		&user.Username,
+		&user.Email,
+		&user.Password.hash,
+		&user.Version,
+	)
+	if err != nil {
+		switch {
+		case errors.Is(err, pgx.ErrNoRows):
+			return nil, ErrRecordNotFound
+		default:
+			return nil, err
+		}
+	}
+
+	return &user, nil
 }

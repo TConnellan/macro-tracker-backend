@@ -11,6 +11,7 @@ import (
 
 var (
 	ErrRecordNotFound             = errors.New("record not found")
+	ErrInvalidCredentials         = errors.New("credentials were not correct")
 	ErrEditConflict               = errors.New("edit conflict")
 	ErrReferencedUserDoesNotExist = errors.New("user doesn't exist")
 	ErrParentRecipeDoesNotExist   = errors.New("parent recipe doesn't exist")
@@ -21,6 +22,7 @@ var (
 
 type Models struct {
 	Users            IUserModel
+	Tokens           ITokenModel
 	Consumed         IConsumedModel
 	Consumables      IConsumableModel
 	Recipes          IRecipeModel
@@ -31,6 +33,7 @@ type Models struct {
 func NewModel(db *pgxpool.Pool) Models {
 	return Models{
 		Users:            UserModel{DB: db},
+		Tokens:           TokenModel{DB: db},
 		Consumed:         ConsumedModel{DB: db},
 		Consumables:      ConsumableModel{DB: db},
 		Recipes:          RecipeModel{DB: db},

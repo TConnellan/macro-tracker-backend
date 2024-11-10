@@ -90,32 +90,6 @@ func main() {
 	}
 }
 
-// func openDB3(cfg config) (*sql.DB, error) {
-// 	db, err := sql.Open("postgres", cfg.db.dsn)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	db.SetMaxOpenConns(cfg.db.maxOpenConnections)
-// 	db.SetMaxIdleConns(cfg.db.maxIdleConns)
-// 	idleTime, err := time.ParseDuration(cfg.db.maxIdleTime)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	db.SetConnMaxIdleTime(idleTime)
-
-// 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-// 	defer cancel()
-
-// 	err = db.PingContext(ctx)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	return db, nil
-
-// }
-
 func openDB(cfg config) (*pgxpool.Pool, error) {
 	connConfig, err := pgxpool.ParseConfig(cfg.db.dsn)
 	if err != nil {
@@ -123,7 +97,6 @@ func openDB(cfg config) (*pgxpool.Pool, error) {
 	}
 
 	connConfig.MaxConns = int32(cfg.db.maxOpenConnections)
-	// connConfig.MaxIdleConns = int32(cfg.db.maxIdleConns) # pgx doesn't implement maxidleconns
 
 	idleTime, err := time.ParseDuration(cfg.db.maxIdleTime)
 	if err != nil {
