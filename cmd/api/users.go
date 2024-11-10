@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"net/http"
+	"time"
 
 	"github.com/tconnellan/macro-tracker-backend/internal/data"
 	"github.com/tconnellan/macro-tracker-backend/internal/validator"
@@ -64,4 +65,46 @@ func (app *application) registerUserHandler(w http.ResponseWriter, r *http.Reque
 		app.serverErrorResponse(w, r, err)
 	}
 
+}
+
+func (app *application) UserLoginHandler(w http.ResponseWriter, r *http.Request) {
+	var input struct {
+		Email    string `json:"email"`
+		Password string `json:"password"`
+	}
+
+	err := app.readJSON(w, r, &input)
+	if err != nil {
+		app.badRequestResponse(w, r, err)
+		return
+	}
+
+	v := validator.New()
+	data.ValidateEmail(v, input.Email)
+	data.ValidatePasswordPlaintext(v, input.Password)
+	if !v.Valid() {
+		app.failedValidationResponse(w, r, v.Errors)
+		return
+	}
+
+	user, err := app.models.Users.GetByEmail(input.Email)
+	if err != nil {
+		if errors.Is(err, data.ErrInvalidCredentials) {
+			app.credentialsInvalid(w, r)
+			return
+		}
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	token, err := app.models.Tokens.New(user.ID, 24*time.Hour, data.ScopeAuthentication)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	err = app.writeJSON(w, http.StatusCreated, envelope{"token": token}, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
 }

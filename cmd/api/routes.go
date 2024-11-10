@@ -15,6 +15,7 @@ func (app *application) routes() http.Handler {
 	router.MethodNotAllowed = http.HandlerFunc(app.methodNotAllowedResponse)
 
 	router.HandlerFunc(http.MethodPost, "/v1/users", app.registerUserHandler)
+	router.HandlerFunc(http.MethodPost, "/v1/users/login", app.UserLoginHandler)
 
-	return app.recoverPanic(app.rateLimit(router))
+	return app.recoverPanic(app.rateLimit(app.checkAuthentication(router)))
 }

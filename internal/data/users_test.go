@@ -3,6 +3,7 @@ package data
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/tconnellan/macro-tracker-backend/internal/assert"
 	"github.com/tconnellan/macro-tracker-backend/internal/validator"
@@ -468,6 +469,91 @@ func TestUserModelGetByEmail(t *testing.T) {
 	}
 }
 
+func TestUserModelAuthenticate(t *testing.T) {
+
+	if testing.Short() {
+		t.Skip("models: skipping integration test")
+	}
+
+	tests := []struct {
+		name      string
+		user      User
+		pass      string
+		trypass   string
+		wantError error
+	}{
+		{
+			name: "Valid auth",
+			user: User{
+				Username: "test1",
+				Password: password{},
+				Email:    "test1@gmail.com",
+			},
+			pass:      "Pass1",
+			trypass:   "Pass1",
+			wantError: nil,
+		},
+		{
+			name: "invalid auth space",
+			user: User{
+				Username: "test2",
+				Password: password{},
+				Email:    "test1@email.com",
+			},
+			pass:      "pass2",
+			trypass:   "notcorrect",
+			wantError: ErrInvalidCredentials,
+		},
+		{
+			name: "invalid auth case",
+			user: User{
+				Username: "test2",
+				Password: password{},
+				Email:    "test1@email.com",
+			},
+			pass:      "pass2",
+			trypass:   "Pass2",
+			wantError: ErrInvalidCredentials,
+		},
+		{
+			name: "invalid auth space",
+			user: User{
+				Username: "test2",
+				Password: password{},
+				Email:    "test1@email.com",
+			},
+			pass:      "pass2",
+			trypass:   "pass2 ",
+			wantError: ErrInvalidCredentials,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := tt.user.Password.Set(tt.pass)
+			if err != nil {
+				assert.FailWithError(t, err)
+			}
+
+			db, err := newTestDB(t, "users")
+			if err != nil {
+				t.Fatal(fmt.Errorf("Failed test db setup: %w", err))
+			}
+			m := UserModel{db}
+
+			err = m.Insert(&tt.user)
+			assert.ExpectError(t, err, nil)
+			if err != nil {
+				return
+			}
+
+			_, err = m.Authenticate(tt.user.Email, tt.trypass)
+
+			assert.ExpectError(t, err, tt.wantError)
+		})
+	}
+}
+
 func TestUserModelUpdate(t *testing.T) {
 
 	if testing.Short() {
@@ -542,6 +628,61 @@ func TestUserModelUpdate(t *testing.T) {
 
 			assert.Equal(t, updatedUser.Email, tt.newEmail)
 			assert.Equal(t, updatedUser.Username, tt.newUsername)
+		})
+	}
+}
+
+func TestUserModelGetForToken(t *testing.T) {
+
+	if testing.Short() {
+		t.Skip("models: skipping integration test")
+	}
+
+	tests := []struct {
+		name      string
+		ID        int64
+		ttl       time.Duration
+		scope     string
+		wantError error
+	}{
+		{
+			name:      "user exists for token",
+			ID:        1,
+			ttl:       3 * time.Hour,
+			scope:     "authentication",
+			wantError: nil,
+		},
+		{
+			name:      "user doesn't exist",
+			ID:        999999,
+			ttl:       3 * time.Hour,
+			scope:     "authentication",
+			wantError: ErrReferencedUserDoesNotExist,
+		},
+		{
+			name:      "user cannot exist",
+			ID:        -1,
+			ttl:       3 * time.Hour,
+			scope:     "authentication",
+			wantError: ErrReferencedUserDoesNotExist,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			db, err := newTestDB(t, "users")
+			if err != nil {
+				t.Fatal(fmt.Errorf("Failed test db setup: %w", err))
+			}
+
+			m := TokenModel{db}
+
+			_, err = m.New(int64(tt.ID), tt.ttl, tt.scope)
+			assert.ExpectError(t, err, tt.wantError)
+			if err != nil {
+				return
+			}
 		})
 	}
 }
