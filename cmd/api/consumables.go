@@ -36,12 +36,6 @@ func (app *application) getConsumable(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) getUserConsumables(w http.ResponseWriter, r *http.Request) {
-	params := httprouter.ParamsFromContext(r.Context())
-	userID, err := strconv.Atoi(params.ByName("userid"))
-	if err != nil || userID < 1 {
-		app.notFoundResponse(w, r)
-		return
-	}
 
 	v := validator.New()
 
@@ -65,7 +59,7 @@ func (app *application) getUserConsumables(w http.ResponseWriter, r *http.Reques
 		RequireNameAndBrandNameMatch: false,
 	}
 
-	consumables, metadata, err := app.models.Consumables.GetByCreatorID(int64(userID), filters)
+	consumables, metadata, err := app.models.Consumables.GetByCreatorID(app.contextGetUser(r).ID, filters)
 	if err != nil {
 		switch {
 		case errors.Is(err, data.ErrRecordNotFound):
@@ -134,6 +128,7 @@ func (app *application) createConsumable(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
+	consumable.CreatorID = app.contextGetUser(r).ID
 	err = app.models.Consumables.Insert(&consumable)
 	if err != nil {
 		switch {
@@ -159,7 +154,7 @@ func (app *application) updateConsumable(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	err = app.models.Consumables.Insert(&consumable)
+	err = app.models.Consumables.Update(&consumable)
 	if err != nil {
 		switch {
 		case errors.Is(err, data.ErrReferencedUserDoesNotExist):
