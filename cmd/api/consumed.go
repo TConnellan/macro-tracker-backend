@@ -54,6 +54,7 @@ func (app *application) postConsumed(w http.ResponseWriter, r *http.Request) {
 	err := app.readJSON(w, r, &consumed)
 	if err != nil {
 		app.badRequestResponse(w, r, err)
+		return
 	}
 
 	consumed.UserID = app.contextGetUser(r).ID
@@ -84,6 +85,7 @@ func (app *application) updateConsumed(w http.ResponseWriter, r *http.Request) {
 	err := app.readJSON(w, r, &consumed)
 	if err != nil {
 		app.badRequestResponse(w, r, err)
+		return
 	}
 
 	consumed.UserID = app.contextGetUser(r).ID

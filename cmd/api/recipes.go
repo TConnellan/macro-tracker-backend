@@ -95,6 +95,7 @@ func (app *application) createChildRecipe(w http.ResponseWriter, r *http.Request
 	err = app.readJSON(w, r, &fullRecipe)
 	if err != nil {
 		app.badRequestResponse(w, r, err)
+		return
 	}
 
 	fullRecipe.Recipe.CreatorID = app.contextGetUser(r).ID
@@ -129,6 +130,7 @@ func (app *application) createNewRecipe(w http.ResponseWriter, r *http.Request) 
 	err := app.readJSON(w, r, &fullRecipe)
 	if err != nil {
 		app.badRequestResponse(w, r, err)
+		return
 	}
 
 	fullRecipe.Recipe.CreatorID = app.contextGetUser(r).ID
@@ -164,6 +166,7 @@ func (app *application) updateStep(w http.ResponseWriter, r *http.Request) {
 	err := app.readJSON(w, r, &recipeComponent)
 	if err != nil {
 		app.badRequestResponse(w, r, err)
+		return
 	}
 
 	err = app.models.RecipeComponents.Update(&recipeComponent, app.contextGetUser(r).ID)

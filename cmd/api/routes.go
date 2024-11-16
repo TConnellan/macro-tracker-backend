@@ -38,6 +38,13 @@ func (app *application) routes() http.Handler {
 	router.Handler(http.MethodPut, "/v1/recipes/:id/step", protectedMiddleware.ThenFunc(app.updateStep))
 	router.Handler(http.MethodGet, "/v1/recipes/:id/ancestors", protectedMiddleware.ThenFunc(app.getAncestors))
 
-	// return app.recoverPanic(app.rateLimit(app.checkAuthentication(router)))
+	// consumables
+	router.Handler(http.MethodGet, "/v1/consumable/user/:userid", protectedMiddleware.ThenFunc(app.getUserConsumables))
+	router.Handler(http.MethodGet, "/v1/consumable/:id", protectedMiddleware.ThenFunc(app.getConsumable))
+	router.Handler(http.MethodGet, "/v1/consumable/search", protectedMiddleware.ThenFunc(app.searchConsumables))
+	router.Handler(http.MethodPost, "/v1/consumable", protectedMiddleware.ThenFunc(app.createConsumable))
+	router.Handler(http.MethodPut, "/v1/consumable/:id", protectedMiddleware.ThenFunc(app.updateConsumable))
+	router.Handler(http.MethodGet, "/v1/consumable/search", protectedMiddleware.ThenFunc(app.searchConsumables))
+
 	return standardMiddleware.Then(router)
 }
