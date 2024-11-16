@@ -129,6 +129,14 @@ func (app *application) createConsumable(w http.ResponseWriter, r *http.Request)
 	}
 
 	consumable.CreatorID = app.contextGetUser(r).ID
+
+	v := validator.New()
+	data.ValidateConsumable(v, &consumable)
+	if !v.Valid() {
+		app.failedValidationResponse(w, r, v.Errors)
+		return
+	}
+
 	err = app.models.Consumables.Insert(&consumable)
 	if err != nil {
 		switch {
@@ -151,6 +159,13 @@ func (app *application) updateConsumable(w http.ResponseWriter, r *http.Request)
 	err := app.readJSON(w, r, consumable)
 	if err != nil {
 		app.badRequestResponse(w, r, err)
+		return
+	}
+
+	v := validator.New()
+	data.ValidateConsumable(v, &consumable)
+	if !v.Valid() {
+		app.failedValidationResponse(w, r, v.Errors)
 		return
 	}
 

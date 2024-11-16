@@ -101,6 +101,13 @@ func (app *application) createChildRecipe(w http.ResponseWriter, r *http.Request
 	fullRecipe.Recipe.CreatorID = app.contextGetUser(r).ID
 	fullRecipe.Recipe.ParentRecipeID = int64(parentId)
 
+	v := validator.New()
+	data.ValidateFullRecipe(v, &fullRecipe)
+	if !v.Valid() {
+		app.failedValidationResponse(w, r, v.Errors)
+		return
+	}
+
 	err = app.models.Recipes.UpdateFullRecipe(&fullRecipe)
 	if err != nil {
 		switch {
@@ -136,6 +143,13 @@ func (app *application) createNewRecipe(w http.ResponseWriter, r *http.Request) 
 	fullRecipe.Recipe.CreatorID = app.contextGetUser(r).ID
 	fullRecipe.Recipe.ParentRecipeID = 0
 
+	v := validator.New()
+	data.ValidateFullRecipe(v, &fullRecipe)
+	if !v.Valid() {
+		app.failedValidationResponse(w, r, v.Errors)
+		return
+	}
+
 	err = app.models.Recipes.InsertFullRecipe(&fullRecipe)
 
 	if err != nil {
@@ -166,6 +180,13 @@ func (app *application) updateStep(w http.ResponseWriter, r *http.Request) {
 	err := app.readJSON(w, r, &recipeComponent)
 	if err != nil {
 		app.badRequestResponse(w, r, err)
+		return
+	}
+
+	v := validator.New()
+	data.ValidateRecipeComponent(v, &recipeComponent)
+	if !v.Valid() {
+		app.failedValidationResponse(w, r, v.Errors)
 		return
 	}
 
