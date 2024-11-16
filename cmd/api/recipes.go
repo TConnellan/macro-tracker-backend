@@ -85,12 +85,20 @@ func (app *application) getRecipe(w http.ResponseWriter, r *http.Request) {
 func (app *application) createChildRecipe(w http.ResponseWriter, r *http.Request) {
 	var fullRecipe data.FullRecipe
 
-	err := app.readJSON(w, r, &fullRecipe)
+	params := httprouter.ParamsFromContext(r.Context())
+	parentId, err := strconv.Atoi(params.ByName("id"))
+	if err != nil || parentId < 1 {
+		app.notFoundResponse(w, r)
+		return
+	}
+
+	err = app.readJSON(w, r, &fullRecipe)
 	if err != nil {
 		app.badRequestResponse(w, r, err)
 	}
 
 	fullRecipe.Recipe.CreatorID = app.contextGetUser(r).ID
+	fullRecipe.Recipe.ParentRecipeID = int64(parentId)
 
 	err = app.models.Recipes.UpdateFullRecipe(&fullRecipe)
 	if err != nil {
@@ -124,6 +132,7 @@ func (app *application) createNewRecipe(w http.ResponseWriter, r *http.Request) 
 	}
 
 	fullRecipe.Recipe.CreatorID = app.contextGetUser(r).ID
+	fullRecipe.Recipe.ParentRecipeID = 0
 
 	err = app.models.Recipes.InsertFullRecipe(&fullRecipe)
 
