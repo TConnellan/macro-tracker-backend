@@ -1,0 +1,1 @@
+ALTER TABLE recipes ADD CONSTRAINT ancestor_references_are_descending CHECK (parent_recipe_id IS NULL OR id > parent_recipe_id);
