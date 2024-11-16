@@ -28,15 +28,63 @@ type PantryItemModel struct {
 }
 
 type IPantryItemModel interface {
+	GetAllByUserID(int64) ([]*PantryItem, error)
 	Get(int64) (*PantryItem, error)
 	Create(*PantryItem) error
 	Update(*PantryItem) error
-	Delete(int64) error
+	Delete(int64, int64) error
+}
+
+func (m PantryItemModel) GetAllByUserID(userID int64) ([]*PantryItem, error) {
+
+	stmt := `
+	SELECT id, user_id, consumable_id, name, created_at, last_edited_at
+	FROM pantry_items
+	WHERE user_id = $1
+	`
+
+	ctx, cancel := GetDefaultTimeoutContext()
+	defer cancel()
+
+	rows, err := m.DB.Query(ctx, stmt, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	pantryItems := []*PantryItem{}
+
+	var pantryItem PantryItem
+	for rows.Next() {
+		pantryItem = PantryItem{}
+
+		err = rows.Scan(
+			&pantryItem.ID,
+			&pantryItem.UserID,
+			&pantryItem.ConsumableId,
+			&pantryItem.Name,
+			&pantryItem.CreatedAt,
+			&pantryItem.LastEditedAt,
+		)
+
+		if err != nil {
+			return nil, err
+		}
+		pantryItems = append(pantryItems, &pantryItem)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return pantryItems, nil
+
 }
 
 func (m PantryItemModel) Get(ID int64) (*PantryItem, error) {
 	return get(ID, m.DB)
 }
+
 func get(ID int64, db psqlDB) (*PantryItem, error) {
 
 	stmt := `
@@ -132,16 +180,16 @@ func updatepantryItem(pantryItem *PantryItem, db psqlDB) error {
 	return nil
 }
 
-func (m PantryItemModel) Delete(ID int64) error {
+func (m PantryItemModel) Delete(ID int64, userID int64) error {
 	stmt := `
 	DELETE FROM pantry_items
-	WHERE id = $1
+	WHERE id = $1 AND user_id = $2
 	`
 
 	ctx, cancel := GetDefaultTimeoutContext()
 	defer cancel()
 
-	result, err := m.DB.Exec(ctx, stmt, ID)
+	result, err := m.DB.Exec(ctx, stmt, ID, userID)
 	if err != nil {
 		return err
 	}

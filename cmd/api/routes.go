@@ -38,6 +38,19 @@ func (app *application) routes() http.Handler {
 	router.Handler(http.MethodPut, "/v1/recipes/:id/step", protectedMiddleware.ThenFunc(app.updateStep))
 	router.Handler(http.MethodGet, "/v1/recipes/:id/ancestors", protectedMiddleware.ThenFunc(app.getAncestors))
 
-	// return app.recoverPanic(app.rateLimit(app.checkAuthentication(router)))
+	// consumables
+	router.Handler(http.MethodGet, "/v1/consumable/personal", protectedMiddleware.ThenFunc(app.getUserConsumables))
+	router.Handler(http.MethodGet, "/v1/consumable/:id", protectedMiddleware.ThenFunc(app.getConsumable))
+	router.Handler(http.MethodGet, "/v1/consumable/search", protectedMiddleware.ThenFunc(app.searchConsumables))
+	router.Handler(http.MethodPost, "/v1/consumable", protectedMiddleware.ThenFunc(app.createConsumable))
+	router.Handler(http.MethodPut, "/v1/consumable/:id", protectedMiddleware.ThenFunc(app.updateConsumable))
+	router.Handler(http.MethodGet, "/v1/consumable/search", protectedMiddleware.ThenFunc(app.searchConsumables))
+
+	// pantry items
+	router.Handler(http.MethodGet, "/v1/pantryitems", protectedMiddleware.ThenFunc(app.getPantryItems))
+	router.Handler(http.MethodPost, "/v1/pantryitems", protectedMiddleware.ThenFunc(app.createPantryItem))
+	router.Handler(http.MethodPut, "/v1/pantryitems", protectedMiddleware.ThenFunc(app.updatePantryItem))
+	router.Handler(http.MethodDelete, "/v1/pantryitems/:id", protectedMiddleware.ThenFunc(app.deletePantryItem))
+
 	return standardMiddleware.Then(router)
 }

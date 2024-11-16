@@ -54,9 +54,17 @@ func (app *application) postConsumed(w http.ResponseWriter, r *http.Request) {
 	err := app.readJSON(w, r, &consumed)
 	if err != nil {
 		app.badRequestResponse(w, r, err)
+		return
 	}
 
 	consumed.UserID = app.contextGetUser(r).ID
+
+	v := validator.New()
+	data.ValidateConsumed(v, &consumed)
+	if !v.Valid() {
+		app.failedValidationResponse(w, r, v.Errors)
+		return
+	}
 
 	err = app.models.Consumed.Insert(&consumed)
 	if err != nil {
@@ -84,9 +92,17 @@ func (app *application) updateConsumed(w http.ResponseWriter, r *http.Request) {
 	err := app.readJSON(w, r, &consumed)
 	if err != nil {
 		app.badRequestResponse(w, r, err)
+		return
 	}
 
 	consumed.UserID = app.contextGetUser(r).ID
+
+	v := validator.New()
+	data.ValidateConsumed(v, &consumed)
+	if !v.Valid() {
+		app.failedValidationResponse(w, r, v.Errors)
+		return
+	}
 
 	err = app.models.Consumed.Update(&consumed)
 	if err != nil {

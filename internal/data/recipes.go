@@ -678,7 +678,6 @@ func (m RecipeModel) GetAllAncestors(childRecipe *Recipe, filters RecipeFilters)
 		if err != nil {
 			return nil, Metadata{}, err
 		}
-		fmt.Printf("%#v", ancestor)
 		ancestors = append(ancestors, &ancestor)
 	}
 
