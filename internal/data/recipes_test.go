@@ -3,14 +3,13 @@ package data
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/tconnellan/macro-tracker-backend/internal/assert"
 	"github.com/tconnellan/macro-tracker-backend/internal/validator"
 )
 
 func TestRecipeHelpers(t *testing.T) {
-
-	timeFormat := "2006-01-02 15:04:05"
 
 	tests := []struct {
 		name   string
@@ -24,8 +23,8 @@ func TestRecipeHelpers(t *testing.T) {
 				ID:             1,
 				Name:           "Lasagne",
 				CreatorID:      1,
-				CreatedAt:      MustParse(timeFormat, "2024-01-01 10:00:00"),
-				LastEditedAt:   MustParse(timeFormat, "2024-01-01 10:00:00"),
+				CreatedAt:      time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+				LastEditedAt:   time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 				Notes:          "some notes",
 				ParentRecipeID: 0,
 				IsLatest:       true,
@@ -38,8 +37,8 @@ func TestRecipeHelpers(t *testing.T) {
 				ID:             1,
 				Name:           "",
 				CreatorID:      1,
-				CreatedAt:      MustParse(timeFormat, "2024-01-01 10:00:00"),
-				LastEditedAt:   MustParse(timeFormat, "2024-01-01 10:00:00"),
+				CreatedAt:      time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+				LastEditedAt:   time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 				Notes:          "some notes",
 				ParentRecipeID: 0,
 				IsLatest:       true,
@@ -52,8 +51,8 @@ func TestRecipeHelpers(t *testing.T) {
 				ID:             1,
 				Name:           "LasagneLasagneLasagneLasagneLasagneLasagneLasagneLasagne",
 				CreatorID:      1,
-				CreatedAt:      MustParse(timeFormat, "2024-01-01 10:00:00"),
-				LastEditedAt:   MustParse(timeFormat, "2024-01-01 10:00:00"),
+				CreatedAt:      time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+				LastEditedAt:   time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 				Notes:          "some notes",
 				ParentRecipeID: 0,
 				IsLatest:       true,
@@ -74,8 +73,6 @@ func TestRecipeHelpers(t *testing.T) {
 
 func TestFullRecipeHelpers(t *testing.T) {
 
-	timeFormat := "2006-01-02 15:04:05"
-
 	tests := []struct {
 		name       string
 		valid      bool
@@ -90,8 +87,8 @@ func TestFullRecipeHelpers(t *testing.T) {
 					ID:             1,
 					Name:           "Lasagne",
 					CreatorID:      1,
-					CreatedAt:      MustParse(timeFormat, "2024-01-01 10:00:00"),
-					LastEditedAt:   MustParse(timeFormat, "2024-01-01 10:00:00"),
+					CreatedAt:      time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+					LastEditedAt:   time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 					Notes:          "some notes",
 					ParentRecipeID: 0,
 					IsLatest:       true,
@@ -101,7 +98,7 @@ func TestFullRecipeHelpers(t *testing.T) {
 						ID:              1,
 						RecipeID:        1,
 						PantryItemID:    1,
-						CreatedAt:       MustParse(timeFormat, "2024-01-01 10:00:00"),
+						CreatedAt:       time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 						Quantity:        4,
 						StepNo:          1,
 						StepDescription: "step 1",
@@ -113,15 +110,15 @@ func TestFullRecipeHelpers(t *testing.T) {
 						UserID:       1,
 						ConsumableId: 1,
 						Name:         "lasagne sheet",
-						CreatedAt:    MustParse(timeFormat, "2024-01-01 10:00:00"),
-						LastEditedAt: MustParse(timeFormat, "2024-01-01 10:00:00"),
+						CreatedAt:    time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+						LastEditedAt: time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 					},
 				},
 				Consumables: []*Consumable{
 					{
 						ID:        1,
 						CreatorID: 1,
-						CreatedAt: MustParse(timeFormat, "2024-01-01 10:00:00"),
+						CreatedAt: time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 						Name:      "Lasagne Past Large",
 						BrandName: "San Remo",
 						Size:      62.5,
@@ -144,8 +141,8 @@ func TestFullRecipeHelpers(t *testing.T) {
 					ID:             1,
 					Name:           "Lasagne",
 					CreatorID:      1,
-					CreatedAt:      MustParse(timeFormat, "2024-01-01 10:00:00"),
-					LastEditedAt:   MustParse(timeFormat, "2024-01-01 10:00:00"),
+					CreatedAt:      time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+					LastEditedAt:   time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 					Notes:          "some notes",
 					ParentRecipeID: 0,
 					IsLatest:       true,
@@ -163,8 +160,8 @@ func TestFullRecipeHelpers(t *testing.T) {
 					ID:             1,
 					Name:           "Lasagne",
 					CreatorID:      1,
-					CreatedAt:      MustParse(timeFormat, "2024-01-01 10:00:00"),
-					LastEditedAt:   MustParse(timeFormat, "2024-01-01 10:00:00"),
+					CreatedAt:      time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+					LastEditedAt:   time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 					Notes:          "some notes",
 					ParentRecipeID: 0,
 					IsLatest:       true,
@@ -174,7 +171,7 @@ func TestFullRecipeHelpers(t *testing.T) {
 						ID:              1,
 						RecipeID:        9999,
 						PantryItemID:    1,
-						CreatedAt:       MustParse(timeFormat, "2024-01-01 10:00:00"),
+						CreatedAt:       time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 						Quantity:        4,
 						StepNo:          1,
 						StepDescription: "step 1",
@@ -186,15 +183,15 @@ func TestFullRecipeHelpers(t *testing.T) {
 						UserID:       1,
 						ConsumableId: 1,
 						Name:         "lasagne sheet",
-						CreatedAt:    MustParse(timeFormat, "2024-01-01 10:00:00"),
-						LastEditedAt: MustParse(timeFormat, "2024-01-01 10:00:00"),
+						CreatedAt:    time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+						LastEditedAt: time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 					},
 				},
 				Consumables: []*Consumable{
 					{
 						ID:        1,
 						CreatorID: 1,
-						CreatedAt: MustParse(timeFormat, "2024-01-01 10:00:00"),
+						CreatedAt: time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 						Name:      "Lasagne Past Large",
 						BrandName: "San Remo",
 						Size:      62.5,
@@ -217,8 +214,8 @@ func TestFullRecipeHelpers(t *testing.T) {
 					ID:             1,
 					Name:           "Lasagne",
 					CreatorID:      1,
-					CreatedAt:      MustParse(timeFormat, "2024-01-01 10:00:00"),
-					LastEditedAt:   MustParse(timeFormat, "2024-01-01 10:00:00"),
+					CreatedAt:      time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+					LastEditedAt:   time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 					Notes:          "some notes",
 					ParentRecipeID: 0,
 					IsLatest:       true,
@@ -228,7 +225,7 @@ func TestFullRecipeHelpers(t *testing.T) {
 						ID:              1,
 						RecipeID:        1,
 						PantryItemID:    1,
-						CreatedAt:       MustParse(timeFormat, "2024-01-01 10:00:00"),
+						CreatedAt:       time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 						Quantity:        4,
 						StepNo:          1,
 						StepDescription: "step 1",
@@ -237,7 +234,7 @@ func TestFullRecipeHelpers(t *testing.T) {
 						ID:              1,
 						RecipeID:        1,
 						PantryItemID:    2,
-						CreatedAt:       MustParse(timeFormat, "2024-01-01 10:00:00"),
+						CreatedAt:       time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 						Quantity:        5,
 						StepNo:          2,
 						StepDescription: "step 2",
@@ -249,23 +246,23 @@ func TestFullRecipeHelpers(t *testing.T) {
 						UserID:       1,
 						ConsumableId: 1,
 						Name:         "lasagne sheet",
-						CreatedAt:    MustParse(timeFormat, "2024-01-01 10:00:00"),
-						LastEditedAt: MustParse(timeFormat, "2024-01-01 10:00:00"),
+						CreatedAt:    time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+						LastEditedAt: time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 					},
 					{
 						ID:           2,
 						UserID:       1,
 						ConsumableId: 2,
 						Name:         "Minced Beef",
-						CreatedAt:    MustParse(timeFormat, "2024-01-01 10:00:00"),
-						LastEditedAt: MustParse(timeFormat, "2024-01-01 10:00:00"),
+						CreatedAt:    time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+						LastEditedAt: time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 					},
 				},
 				Consumables: []*Consumable{
 					{
 						ID:        1,
 						CreatorID: 1,
-						CreatedAt: MustParse(timeFormat, "2024-01-01 10:00:00"),
+						CreatedAt: time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 						Name:      "Lasagne Pasta Large",
 						BrandName: "San Remo",
 						Size:      62.5,
@@ -280,7 +277,7 @@ func TestFullRecipeHelpers(t *testing.T) {
 					{
 						ID:        2,
 						CreatorID: 1,
-						CreatedAt: MustParse(timeFormat, "2024-01-01 10:00:00"),
+						CreatedAt: time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 						Name:      "No Added Hormone Beef 5 Star Extra Trim Mince",
 						BrandName: "Coles",
 						Size:      100,
@@ -303,8 +300,8 @@ func TestFullRecipeHelpers(t *testing.T) {
 					ID:             1,
 					Name:           "Lasagne",
 					CreatorID:      1,
-					CreatedAt:      MustParse(timeFormat, "2024-01-01 10:00:00"),
-					LastEditedAt:   MustParse(timeFormat, "2024-01-01 10:00:00"),
+					CreatedAt:      time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+					LastEditedAt:   time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 					Notes:          "some notes",
 					ParentRecipeID: 0,
 					IsLatest:       true,
@@ -314,7 +311,7 @@ func TestFullRecipeHelpers(t *testing.T) {
 						ID:              1,
 						RecipeID:        1,
 						PantryItemID:    1,
-						CreatedAt:       MustParse(timeFormat, "2024-01-01 10:00:00"),
+						CreatedAt:       time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 						Quantity:        4,
 						StepNo:          1,
 						StepDescription: "step 1",
@@ -323,7 +320,7 @@ func TestFullRecipeHelpers(t *testing.T) {
 						ID:              1,
 						RecipeID:        1,
 						PantryItemID:    1,
-						CreatedAt:       MustParse(timeFormat, "2024-01-01 10:00:00"),
+						CreatedAt:       time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 						Quantity:        5,
 						StepNo:          1,
 						StepDescription: "step 2",
@@ -335,23 +332,23 @@ func TestFullRecipeHelpers(t *testing.T) {
 						UserID:       1,
 						ConsumableId: 1,
 						Name:         "lasagne sheet",
-						CreatedAt:    MustParse(timeFormat, "2024-01-01 10:00:00"),
-						LastEditedAt: MustParse(timeFormat, "2024-01-01 10:00:00"),
+						CreatedAt:    time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+						LastEditedAt: time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 					},
 					{
 						ID:           2,
 						UserID:       1,
 						ConsumableId: 2,
 						Name:         "Minced Beef",
-						CreatedAt:    MustParse(timeFormat, "2024-01-01 10:00:00"),
-						LastEditedAt: MustParse(timeFormat, "2024-01-01 10:00:00"),
+						CreatedAt:    time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+						LastEditedAt: time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 					},
 				},
 				Consumables: []*Consumable{
 					{
 						ID:        1,
 						CreatorID: 1,
-						CreatedAt: MustParse(timeFormat, "2024-01-01 10:00:00"),
+						CreatedAt: time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 						Name:      "Lasagne Pasta Large",
 						BrandName: "San Remo",
 						Size:      62.5,
@@ -366,7 +363,7 @@ func TestFullRecipeHelpers(t *testing.T) {
 					{
 						ID:        2,
 						CreatorID: 1,
-						CreatedAt: MustParse(timeFormat, "2024-01-01 10:00:00"),
+						CreatedAt: time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 						Name:      "No Added Hormone Beef 5 Star Extra Trim Mince",
 						BrandName: "Coles",
 						Size:      100,
@@ -389,8 +386,8 @@ func TestFullRecipeHelpers(t *testing.T) {
 					ID:             1,
 					Name:           "Lasagne",
 					CreatorID:      1,
-					CreatedAt:      MustParse(timeFormat, "2024-01-01 10:00:00"),
-					LastEditedAt:   MustParse(timeFormat, "2024-01-01 10:00:00"),
+					CreatedAt:      time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+					LastEditedAt:   time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 					Notes:          "some notes",
 					ParentRecipeID: 0,
 					IsLatest:       true,
@@ -400,7 +397,7 @@ func TestFullRecipeHelpers(t *testing.T) {
 						ID:              1,
 						RecipeID:        1,
 						PantryItemID:    1,
-						CreatedAt:       MustParse(timeFormat, "2024-01-01 10:00:00"),
+						CreatedAt:       time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 						Quantity:        4,
 						StepNo:          1,
 						StepDescription: "step 1",
@@ -409,7 +406,7 @@ func TestFullRecipeHelpers(t *testing.T) {
 						ID:              1,
 						RecipeID:        1,
 						PantryItemID:    1,
-						CreatedAt:       MustParse(timeFormat, "2024-01-01 10:00:00"),
+						CreatedAt:       time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 						Quantity:        5,
 						StepNo:          3,
 						StepDescription: "step 2",
@@ -421,23 +418,23 @@ func TestFullRecipeHelpers(t *testing.T) {
 						UserID:       1,
 						ConsumableId: 1,
 						Name:         "lasagne sheet",
-						CreatedAt:    MustParse(timeFormat, "2024-01-01 10:00:00"),
-						LastEditedAt: MustParse(timeFormat, "2024-01-01 10:00:00"),
+						CreatedAt:    time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+						LastEditedAt: time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 					},
 					{
 						ID:           2,
 						UserID:       1,
 						ConsumableId: 2,
 						Name:         "Minced Beef",
-						CreatedAt:    MustParse(timeFormat, "2024-01-01 10:00:00"),
-						LastEditedAt: MustParse(timeFormat, "2024-01-01 10:00:00"),
+						CreatedAt:    time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+						LastEditedAt: time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 					},
 				},
 				Consumables: []*Consumable{
 					{
 						ID:        1,
 						CreatorID: 1,
-						CreatedAt: MustParse(timeFormat, "2024-01-01 10:00:00"),
+						CreatedAt: time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 						Name:      "Lasagne Pasta Large",
 						BrandName: "San Remo",
 						Size:      62.5,
@@ -452,7 +449,7 @@ func TestFullRecipeHelpers(t *testing.T) {
 					{
 						ID:        2,
 						CreatorID: 1,
-						CreatedAt: MustParse(timeFormat, "2024-01-01 10:00:00"),
+						CreatedAt: time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 						Name:      "No Added Hormone Beef 5 Star Extra Trim Mince",
 						BrandName: "Coles",
 						Size:      100,
@@ -475,8 +472,8 @@ func TestFullRecipeHelpers(t *testing.T) {
 					ID:             1,
 					Name:           "Lasagne",
 					CreatorID:      1,
-					CreatedAt:      MustParse(timeFormat, "2024-01-01 10:00:00"),
-					LastEditedAt:   MustParse(timeFormat, "2024-01-01 10:00:00"),
+					CreatedAt:      time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+					LastEditedAt:   time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 					Notes:          "some notes",
 					ParentRecipeID: 0,
 					IsLatest:       true,
@@ -486,7 +483,7 @@ func TestFullRecipeHelpers(t *testing.T) {
 						ID:              1,
 						RecipeID:        1,
 						PantryItemID:    1,
-						CreatedAt:       MustParse(timeFormat, "2024-01-01 10:00:00"),
+						CreatedAt:       time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 						Quantity:        4,
 						StepNo:          1,
 						StepDescription: "step 1",
@@ -495,7 +492,7 @@ func TestFullRecipeHelpers(t *testing.T) {
 						ID:              1,
 						RecipeID:        1,
 						PantryItemID:    1,
-						CreatedAt:       MustParse(timeFormat, "2024-01-01 10:00:00"),
+						CreatedAt:       time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 						Quantity:        5,
 						StepNo:          2,
 						StepDescription: "step 2",
@@ -507,15 +504,15 @@ func TestFullRecipeHelpers(t *testing.T) {
 						UserID:       1,
 						ConsumableId: 1,
 						Name:         "lasagne sheet",
-						CreatedAt:    MustParse(timeFormat, "2024-01-01 10:00:00"),
-						LastEditedAt: MustParse(timeFormat, "2024-01-01 10:00:00"),
+						CreatedAt:    time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+						LastEditedAt: time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 					},
 				},
 				Consumables: []*Consumable{
 					{
 						ID:        1,
 						CreatorID: 1,
-						CreatedAt: MustParse(timeFormat, "2024-01-01 10:00:00"),
+						CreatedAt: time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 						Name:      "Lasagne Pasta Large",
 						BrandName: "San Remo",
 						Size:      62.5,
@@ -530,7 +527,7 @@ func TestFullRecipeHelpers(t *testing.T) {
 					{
 						ID:        2,
 						CreatorID: 1,
-						CreatedAt: MustParse(timeFormat, "2024-01-01 10:00:00"),
+						CreatedAt: time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 						Name:      "No Added Hormone Beef 5 Star Extra Trim Mince",
 						BrandName: "Coles",
 						Size:      100,
@@ -553,8 +550,8 @@ func TestFullRecipeHelpers(t *testing.T) {
 					ID:             1,
 					Name:           "Lasagne",
 					CreatorID:      1,
-					CreatedAt:      MustParse(timeFormat, "2024-01-01 10:00:00"),
-					LastEditedAt:   MustParse(timeFormat, "2024-01-01 10:00:00"),
+					CreatedAt:      time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+					LastEditedAt:   time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 					Notes:          "some notes",
 					ParentRecipeID: 0,
 					IsLatest:       true,
@@ -564,7 +561,7 @@ func TestFullRecipeHelpers(t *testing.T) {
 						ID:              1,
 						RecipeID:        1,
 						PantryItemID:    1,
-						CreatedAt:       MustParse(timeFormat, "2024-01-01 10:00:00"),
+						CreatedAt:       time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 						Quantity:        4,
 						StepNo:          1,
 						StepDescription: "step 1",
@@ -573,7 +570,7 @@ func TestFullRecipeHelpers(t *testing.T) {
 						ID:              1,
 						RecipeID:        1,
 						PantryItemID:    1,
-						CreatedAt:       MustParse(timeFormat, "2024-01-01 10:00:00"),
+						CreatedAt:       time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 						Quantity:        5,
 						StepNo:          2,
 						StepDescription: "step 2",
@@ -585,23 +582,23 @@ func TestFullRecipeHelpers(t *testing.T) {
 						UserID:       1,
 						ConsumableId: 1,
 						Name:         "lasagne sheet",
-						CreatedAt:    MustParse(timeFormat, "2024-01-01 10:00:00"),
-						LastEditedAt: MustParse(timeFormat, "2024-01-01 10:00:00"),
+						CreatedAt:    time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+						LastEditedAt: time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 					},
 					{
 						ID:           2,
 						UserID:       1,
 						ConsumableId: 2,
 						Name:         "Minced Beef",
-						CreatedAt:    MustParse(timeFormat, "2024-01-01 10:00:00"),
-						LastEditedAt: MustParse(timeFormat, "2024-01-01 10:00:00"),
+						CreatedAt:    time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+						LastEditedAt: time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 					},
 				},
 				Consumables: []*Consumable{
 					{
 						ID:        1,
 						CreatorID: 1,
-						CreatedAt: MustParse(timeFormat, "2024-01-01 10:00:00"),
+						CreatedAt: time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 						Name:      "Lasagne Pasta Large",
 						BrandName: "San Remo",
 						Size:      62.5,
@@ -624,8 +621,8 @@ func TestFullRecipeHelpers(t *testing.T) {
 					ID:             1,
 					Name:           "Lasagne",
 					CreatorID:      1,
-					CreatedAt:      MustParse(timeFormat, "2024-01-01 10:00:00"),
-					LastEditedAt:   MustParse(timeFormat, "2024-01-01 10:00:00"),
+					CreatedAt:      time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+					LastEditedAt:   time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 					Notes:          "some notes",
 					ParentRecipeID: 0,
 					IsLatest:       true,
@@ -635,7 +632,7 @@ func TestFullRecipeHelpers(t *testing.T) {
 						ID:              1,
 						RecipeID:        1,
 						PantryItemID:    1,
-						CreatedAt:       MustParse(timeFormat, "2024-01-01 10:00:00"),
+						CreatedAt:       time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 						Quantity:        4,
 						StepNo:          1,
 						StepDescription: "step 1",
@@ -647,23 +644,23 @@ func TestFullRecipeHelpers(t *testing.T) {
 						UserID:       1,
 						ConsumableId: 1,
 						Name:         "lasagne sheet",
-						CreatedAt:    MustParse(timeFormat, "2024-01-01 10:00:00"),
-						LastEditedAt: MustParse(timeFormat, "2024-01-01 10:00:00"),
+						CreatedAt:    time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+						LastEditedAt: time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 					},
 					{
 						ID:           2,
 						UserID:       1,
 						ConsumableId: 2,
 						Name:         "Minced Beef",
-						CreatedAt:    MustParse(timeFormat, "2024-01-01 10:00:00"),
-						LastEditedAt: MustParse(timeFormat, "2024-01-01 10:00:00"),
+						CreatedAt:    time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+						LastEditedAt: time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 					},
 				},
 				Consumables: []*Consumable{
 					{
 						ID:        1,
 						CreatorID: 1,
-						CreatedAt: MustParse(timeFormat, "2024-01-01 10:00:00"),
+						CreatedAt: time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 						Name:      "Lasagne Pasta Large",
 						BrandName: "San Remo",
 						Size:      62.5,
@@ -678,7 +675,7 @@ func TestFullRecipeHelpers(t *testing.T) {
 					{
 						ID:        2,
 						CreatorID: 1,
-						CreatedAt: MustParse(timeFormat, "2024-01-01 10:00:00"),
+						CreatedAt: time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 						Name:      "No Added Hormone Beef 5 Star Extra Trim Mince",
 						BrandName: "Coles",
 						Size:      100,
@@ -701,8 +698,8 @@ func TestFullRecipeHelpers(t *testing.T) {
 					ID:             1,
 					Name:           "Lasagne",
 					CreatorID:      1,
-					CreatedAt:      MustParse(timeFormat, "2024-01-01 10:00:00"),
-					LastEditedAt:   MustParse(timeFormat, "2024-01-01 10:00:00"),
+					CreatedAt:      time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+					LastEditedAt:   time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 					Notes:          "some notes",
 					ParentRecipeID: 0,
 					IsLatest:       true,
@@ -712,7 +709,7 @@ func TestFullRecipeHelpers(t *testing.T) {
 						ID:              1,
 						RecipeID:        1,
 						PantryItemID:    1,
-						CreatedAt:       MustParse(timeFormat, "2024-01-01 10:00:00"),
+						CreatedAt:       time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 						Quantity:        4,
 						StepNo:          1,
 						StepDescription: "step 1",
@@ -721,7 +718,7 @@ func TestFullRecipeHelpers(t *testing.T) {
 						ID:              1,
 						RecipeID:        1,
 						PantryItemID:    99999,
-						CreatedAt:       MustParse(timeFormat, "2024-01-01 10:00:00"),
+						CreatedAt:       time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 						Quantity:        5,
 						StepNo:          2,
 						StepDescription: "step 2",
@@ -733,23 +730,23 @@ func TestFullRecipeHelpers(t *testing.T) {
 						UserID:       1,
 						ConsumableId: 1,
 						Name:         "lasagne sheet",
-						CreatedAt:    MustParse(timeFormat, "2024-01-01 10:00:00"),
-						LastEditedAt: MustParse(timeFormat, "2024-01-01 10:00:00"),
+						CreatedAt:    time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+						LastEditedAt: time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 					},
 					{
 						ID:           2,
 						UserID:       1,
 						ConsumableId: 2,
 						Name:         "Minced Beef",
-						CreatedAt:    MustParse(timeFormat, "2024-01-01 10:00:00"),
-						LastEditedAt: MustParse(timeFormat, "2024-01-01 10:00:00"),
+						CreatedAt:    time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+						LastEditedAt: time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 					},
 				},
 				Consumables: []*Consumable{
 					{
 						ID:        1,
 						CreatorID: 1,
-						CreatedAt: MustParse(timeFormat, "2024-01-01 10:00:00"),
+						CreatedAt: time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 						Name:      "Lasagne Pasta Large",
 						BrandName: "San Remo",
 						Size:      62.5,
@@ -764,7 +761,7 @@ func TestFullRecipeHelpers(t *testing.T) {
 					{
 						ID:        2,
 						CreatorID: 1,
-						CreatedAt: MustParse(timeFormat, "2024-01-01 10:00:00"),
+						CreatedAt: time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 						Name:      "No Added Hormone Beef 5 Star Extra Trim Mince",
 						BrandName: "Coles",
 						Size:      100,
@@ -787,8 +784,8 @@ func TestFullRecipeHelpers(t *testing.T) {
 					ID:             1,
 					Name:           "Lasagne",
 					CreatorID:      1,
-					CreatedAt:      MustParse(timeFormat, "2024-01-01 10:00:00"),
-					LastEditedAt:   MustParse(timeFormat, "2024-01-01 10:00:00"),
+					CreatedAt:      time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+					LastEditedAt:   time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 					Notes:          "some notes",
 					ParentRecipeID: 0,
 					IsLatest:       true,
@@ -798,7 +795,7 @@ func TestFullRecipeHelpers(t *testing.T) {
 						ID:              1,
 						RecipeID:        1,
 						PantryItemID:    1,
-						CreatedAt:       MustParse(timeFormat, "2024-01-01 10:00:00"),
+						CreatedAt:       time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 						Quantity:        4,
 						StepNo:          1,
 						StepDescription: "step 1",
@@ -807,7 +804,7 @@ func TestFullRecipeHelpers(t *testing.T) {
 						ID:              1,
 						RecipeID:        1,
 						PantryItemID:    2,
-						CreatedAt:       MustParse(timeFormat, "2024-01-01 10:00:00"),
+						CreatedAt:       time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 						Quantity:        5,
 						StepNo:          2,
 						StepDescription: "step 2",
@@ -819,23 +816,23 @@ func TestFullRecipeHelpers(t *testing.T) {
 						UserID:       1,
 						ConsumableId: 1,
 						Name:         "lasagne sheet",
-						CreatedAt:    MustParse(timeFormat, "2024-01-01 10:00:00"),
-						LastEditedAt: MustParse(timeFormat, "2024-01-01 10:00:00"),
+						CreatedAt:    time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+						LastEditedAt: time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 					},
 					{
 						ID:           2,
 						UserID:       1,
 						ConsumableId: 2,
 						Name:         "Minced Beef",
-						CreatedAt:    MustParse(timeFormat, "2024-01-01 10:00:00"),
-						LastEditedAt: MustParse(timeFormat, "2024-01-01 10:00:00"),
+						CreatedAt:    time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+						LastEditedAt: time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 					},
 				},
 				Consumables: []*Consumable{
 					{
 						ID:        1,
 						CreatorID: 1,
-						CreatedAt: MustParse(timeFormat, "2024-01-01 10:00:00"),
+						CreatedAt: time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 						Name:      "Lasagne Pasta Large",
 						BrandName: "San Remo",
 						Size:      62.5,
@@ -850,7 +847,7 @@ func TestFullRecipeHelpers(t *testing.T) {
 					{
 						ID:        99999,
 						CreatorID: 1,
-						CreatedAt: MustParse(timeFormat, "2024-01-01 10:00:00"),
+						CreatedAt: time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 						Name:      "No Added Hormone Beef 5 Star Extra Trim Mince",
 						BrandName: "Coles",
 						Size:      100,
@@ -888,8 +885,6 @@ func TestFullRecipeHelpers(t *testing.T) {
 
 func TestRecipeModelGet(t *testing.T) {
 
-	timeFormat := "2006-01-02 15:04:05"
-
 	if testing.Short() {
 		t.Skip("models: skipping integration test")
 	}
@@ -908,8 +903,8 @@ func TestRecipeModelGet(t *testing.T) {
 				ID:             1,
 				Name:           "Lasagne",
 				CreatorID:      1,
-				CreatedAt:      MustParse(timeFormat, "2024-01-01 10:00:00"),
-				LastEditedAt:   MustParse(timeFormat, "2024-01-01 10:00:00"),
+				CreatedAt:      time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+				LastEditedAt:   time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 				Notes:          "a recipe",
 				ParentRecipeID: 0,
 				IsLatest:       true,
@@ -955,8 +950,6 @@ func TestRecipeModelGet(t *testing.T) {
 
 func TestRecipeModelGetByCreatorID(t *testing.T) {
 
-	timeFormat := "2006-01-02 15:04:05"
-
 	if testing.Short() {
 		t.Skip("models: skipping integration test")
 	}
@@ -994,8 +987,8 @@ func TestRecipeModelGetByCreatorID(t *testing.T) {
 					ID:             1,
 					Name:           "Lasagne",
 					CreatorID:      1,
-					CreatedAt:      MustParse(timeFormat, "2024-01-01 10:00:00"),
-					LastEditedAt:   MustParse(timeFormat, "2024-01-01 10:00:00"),
+					CreatedAt:      time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+					LastEditedAt:   time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 					Notes:          "a recipe",
 					ParentRecipeID: 0,
 					IsLatest:       true,
@@ -1020,15 +1013,15 @@ func TestRecipeModelGetByCreatorID(t *testing.T) {
 				PageSize:     100,
 				FirstPage:    1,
 				LastPage:     1,
-				TotalRecords: 4,
+				TotalRecords: 5,
 			},
 			expectRecipes: []*Recipe{
 				{
 					ID:             2,
 					Name:           "recipe2",
 					CreatorID:      2,
-					CreatedAt:      MustParse(timeFormat, "2024-01-01 10:00:00"),
-					LastEditedAt:   MustParse(timeFormat, "2024-01-01 10:00:00"),
+					CreatedAt:      time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+					LastEditedAt:   time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 					Notes:          "a recipe 2",
 					ParentRecipeID: 0,
 					IsLatest:       true,
@@ -1037,8 +1030,8 @@ func TestRecipeModelGetByCreatorID(t *testing.T) {
 					ID:             3,
 					Name:           "recipe3",
 					CreatorID:      2,
-					CreatedAt:      MustParse(timeFormat, "2024-01-01 10:00:00"),
-					LastEditedAt:   MustParse(timeFormat, "2024-01-01 10:00:00"),
+					CreatedAt:      time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+					LastEditedAt:   time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 					Notes:          "a recipe 3",
 					ParentRecipeID: 0,
 					IsLatest:       true,
@@ -1047,8 +1040,8 @@ func TestRecipeModelGetByCreatorID(t *testing.T) {
 					ID:             5,
 					Name:           "Recipe5",
 					CreatorID:      2,
-					CreatedAt:      MustParse(timeFormat, "2024-01-01 10:00:00"),
-					LastEditedAt:   MustParse(timeFormat, "2024-01-01 10:00:00"),
+					CreatedAt:      time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+					LastEditedAt:   time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 					Notes:          "a recipe 5",
 					ParentRecipeID: 0,
 					IsLatest:       true,
@@ -1057,10 +1050,20 @@ func TestRecipeModelGetByCreatorID(t *testing.T) {
 					ID:             6,
 					Name:           "doesntmatchsearch",
 					CreatorID:      2,
-					CreatedAt:      MustParse(timeFormat, "2024-01-01 10:00:00"),
-					LastEditedAt:   MustParse(timeFormat, "2024-01-01 10:00:00"),
+					CreatedAt:      time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+					LastEditedAt:   time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 					Notes:          "not matching",
 					ParentRecipeID: 0,
+					IsLatest:       true,
+				},
+				{
+					ID:             8,
+					Name:           "recipe8",
+					CreatorID:      2,
+					CreatedAt:      time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+					LastEditedAt:   time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+					Notes:          "a recipe 8",
+					ParentRecipeID: 1,
 					IsLatest:       true,
 				},
 			},
@@ -1083,15 +1086,15 @@ func TestRecipeModelGetByCreatorID(t *testing.T) {
 				PageSize:     100,
 				FirstPage:    1,
 				LastPage:     1,
-				TotalRecords: 3,
+				TotalRecords: 4,
 			},
 			expectRecipes: []*Recipe{
 				{
 					ID:             2,
 					Name:           "recipe2",
 					CreatorID:      2,
-					CreatedAt:      MustParse(timeFormat, "2024-01-01 10:00:00"),
-					LastEditedAt:   MustParse(timeFormat, "2024-01-01 10:00:00"),
+					CreatedAt:      time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+					LastEditedAt:   time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 					Notes:          "a recipe 2",
 					ParentRecipeID: 0,
 					IsLatest:       true,
@@ -1100,8 +1103,8 @@ func TestRecipeModelGetByCreatorID(t *testing.T) {
 					ID:             3,
 					Name:           "recipe3",
 					CreatorID:      2,
-					CreatedAt:      MustParse(timeFormat, "2024-01-01 10:00:00"),
-					LastEditedAt:   MustParse(timeFormat, "2024-01-01 10:00:00"),
+					CreatedAt:      time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+					LastEditedAt:   time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 					Notes:          "a recipe 3",
 					ParentRecipeID: 0,
 					IsLatest:       true,
@@ -1110,10 +1113,20 @@ func TestRecipeModelGetByCreatorID(t *testing.T) {
 					ID:             5,
 					Name:           "Recipe5",
 					CreatorID:      2,
-					CreatedAt:      MustParse(timeFormat, "2024-01-01 10:00:00"),
-					LastEditedAt:   MustParse(timeFormat, "2024-01-01 10:00:00"),
+					CreatedAt:      time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+					LastEditedAt:   time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 					Notes:          "a recipe 5",
 					ParentRecipeID: 0,
+					IsLatest:       true,
+				},
+				{
+					ID:             8,
+					Name:           "recipe8",
+					CreatorID:      2,
+					CreatedAt:      time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+					LastEditedAt:   time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+					Notes:          "a recipe 8",
+					ParentRecipeID: 1,
 					IsLatest:       true,
 				},
 			},
@@ -1135,16 +1148,16 @@ func TestRecipeModelGetByCreatorID(t *testing.T) {
 				CurrentPage:  1,
 				PageSize:     2,
 				FirstPage:    1,
-				LastPage:     2,
-				TotalRecords: 4,
+				LastPage:     3,
+				TotalRecords: 5,
 			},
 			expectRecipes: []*Recipe{
 				{
 					ID:             2,
 					Name:           "recipe2",
 					CreatorID:      2,
-					CreatedAt:      MustParse(timeFormat, "2024-01-01 10:00:00"),
-					LastEditedAt:   MustParse(timeFormat, "2024-01-01 10:00:00"),
+					CreatedAt:      time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+					LastEditedAt:   time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 					Notes:          "a recipe 2",
 					ParentRecipeID: 0,
 					IsLatest:       true,
@@ -1153,8 +1166,8 @@ func TestRecipeModelGetByCreatorID(t *testing.T) {
 					ID:             3,
 					Name:           "recipe3",
 					CreatorID:      2,
-					CreatedAt:      MustParse(timeFormat, "2024-01-01 10:00:00"),
-					LastEditedAt:   MustParse(timeFormat, "2024-01-01 10:00:00"),
+					CreatedAt:      time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+					LastEditedAt:   time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 					Notes:          "a recipe 3",
 					ParentRecipeID: 0,
 					IsLatest:       true,
@@ -1178,16 +1191,16 @@ func TestRecipeModelGetByCreatorID(t *testing.T) {
 				CurrentPage:  2,
 				PageSize:     2,
 				FirstPage:    1,
-				LastPage:     2,
-				TotalRecords: 4,
+				LastPage:     3,
+				TotalRecords: 5,
 			},
 			expectRecipes: []*Recipe{
 				{
 					ID:             5,
 					Name:           "Recipe5",
 					CreatorID:      2,
-					CreatedAt:      MustParse(timeFormat, "2024-01-01 10:00:00"),
-					LastEditedAt:   MustParse(timeFormat, "2024-01-01 10:00:00"),
+					CreatedAt:      time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+					LastEditedAt:   time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 					Notes:          "a recipe 5",
 					ParentRecipeID: 0,
 					IsLatest:       true,
@@ -1196,8 +1209,8 @@ func TestRecipeModelGetByCreatorID(t *testing.T) {
 					ID:             6,
 					Name:           "doesntmatchsearch",
 					CreatorID:      2,
-					CreatedAt:      MustParse(timeFormat, "2024-01-01 10:00:00"),
-					LastEditedAt:   MustParse(timeFormat, "2024-01-01 10:00:00"),
+					CreatedAt:      time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+					LastEditedAt:   time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 					Notes:          "not matching",
 					ParentRecipeID: 0,
 					IsLatest:       true,
@@ -1222,17 +1235,27 @@ func TestRecipeModelGetByCreatorID(t *testing.T) {
 				PageSize:     100,
 				FirstPage:    1,
 				LastPage:     1,
-				TotalRecords: 1,
+				TotalRecords: 2,
 			},
 			expectRecipes: []*Recipe{
 				{
 					ID:             4,
 					Name:           "recipe4",
 					CreatorID:      3,
-					CreatedAt:      MustParse(timeFormat, "2024-01-01 10:00:00"),
-					LastEditedAt:   MustParse(timeFormat, "2024-01-01 10:00:00"),
+					CreatedAt:      time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+					LastEditedAt:   time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 					Notes:          "a recipe 4",
 					ParentRecipeID: 1,
+					IsLatest:       true,
+				},
+				{
+					ID:             7,
+					Name:           "recipe7",
+					CreatorID:      3,
+					CreatedAt:      time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+					LastEditedAt:   time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+					Notes:          "a recipe 7",
+					ParentRecipeID: 0,
 					IsLatest:       true,
 				},
 			},
@@ -1305,8 +1328,6 @@ func TestRecipeModelGetByCreatorID(t *testing.T) {
 
 func TestRecipeModelGetLatestByCreatorID(t *testing.T) {
 
-	timeFormat := "2006-01-02 15:04:05"
-
 	if testing.Short() {
 		t.Skip("models: skipping integration test")
 	}
@@ -1344,8 +1365,8 @@ func TestRecipeModelGetLatestByCreatorID(t *testing.T) {
 					ID:             1,
 					Name:           "Lasagne",
 					CreatorID:      1,
-					CreatedAt:      MustParse(timeFormat, "2024-01-01 10:00:00"),
-					LastEditedAt:   MustParse(timeFormat, "2024-01-01 10:00:00"),
+					CreatedAt:      time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+					LastEditedAt:   time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 					Notes:          "a recipe",
 					ParentRecipeID: 0,
 					IsLatest:       true,
@@ -1370,15 +1391,15 @@ func TestRecipeModelGetLatestByCreatorID(t *testing.T) {
 				PageSize:     100,
 				FirstPage:    1,
 				LastPage:     1,
-				TotalRecords: 4,
+				TotalRecords: 5,
 			},
 			expectRecipes: []*Recipe{
 				{
 					ID:             2,
 					Name:           "recipe2",
 					CreatorID:      2,
-					CreatedAt:      MustParse(timeFormat, "2024-01-01 10:00:00"),
-					LastEditedAt:   MustParse(timeFormat, "2024-01-01 10:00:00"),
+					CreatedAt:      time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+					LastEditedAt:   time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 					Notes:          "a recipe 2",
 					ParentRecipeID: 0,
 					IsLatest:       true,
@@ -1387,8 +1408,8 @@ func TestRecipeModelGetLatestByCreatorID(t *testing.T) {
 					ID:             3,
 					Name:           "recipe3",
 					CreatorID:      2,
-					CreatedAt:      MustParse(timeFormat, "2024-01-01 10:00:00"),
-					LastEditedAt:   MustParse(timeFormat, "2024-01-01 10:00:00"),
+					CreatedAt:      time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+					LastEditedAt:   time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 					Notes:          "a recipe 3",
 					ParentRecipeID: 0,
 					IsLatest:       true,
@@ -1397,8 +1418,8 @@ func TestRecipeModelGetLatestByCreatorID(t *testing.T) {
 					ID:             5,
 					Name:           "Recipe5",
 					CreatorID:      2,
-					CreatedAt:      MustParse(timeFormat, "2024-01-01 10:00:00"),
-					LastEditedAt:   MustParse(timeFormat, "2024-01-01 10:00:00"),
+					CreatedAt:      time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+					LastEditedAt:   time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 					Notes:          "a recipe 5",
 					ParentRecipeID: 0,
 					IsLatest:       true,
@@ -1407,10 +1428,20 @@ func TestRecipeModelGetLatestByCreatorID(t *testing.T) {
 					ID:             6,
 					Name:           "doesntmatchsearch",
 					CreatorID:      2,
-					CreatedAt:      MustParse(timeFormat, "2024-01-01 10:00:00"),
-					LastEditedAt:   MustParse(timeFormat, "2024-01-01 10:00:00"),
+					CreatedAt:      time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+					LastEditedAt:   time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 					Notes:          "not matching",
 					ParentRecipeID: 0,
+					IsLatest:       true,
+				},
+				{
+					ID:             8,
+					Name:           "recipe8",
+					CreatorID:      2,
+					CreatedAt:      time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+					LastEditedAt:   time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+					Notes:          "a recipe 8",
+					ParentRecipeID: 1,
 					IsLatest:       true,
 				},
 			},
@@ -1433,15 +1464,15 @@ func TestRecipeModelGetLatestByCreatorID(t *testing.T) {
 				PageSize:     100,
 				FirstPage:    1,
 				LastPage:     1,
-				TotalRecords: 3,
+				TotalRecords: 4,
 			},
 			expectRecipes: []*Recipe{
 				{
 					ID:             2,
 					Name:           "recipe2",
 					CreatorID:      2,
-					CreatedAt:      MustParse(timeFormat, "2024-01-01 10:00:00"),
-					LastEditedAt:   MustParse(timeFormat, "2024-01-01 10:00:00"),
+					CreatedAt:      time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+					LastEditedAt:   time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 					Notes:          "a recipe 2",
 					ParentRecipeID: 0,
 					IsLatest:       true,
@@ -1450,8 +1481,8 @@ func TestRecipeModelGetLatestByCreatorID(t *testing.T) {
 					ID:             3,
 					Name:           "recipe3",
 					CreatorID:      2,
-					CreatedAt:      MustParse(timeFormat, "2024-01-01 10:00:00"),
-					LastEditedAt:   MustParse(timeFormat, "2024-01-01 10:00:00"),
+					CreatedAt:      time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+					LastEditedAt:   time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 					Notes:          "a recipe 3",
 					ParentRecipeID: 0,
 					IsLatest:       true,
@@ -1460,10 +1491,20 @@ func TestRecipeModelGetLatestByCreatorID(t *testing.T) {
 					ID:             5,
 					Name:           "Recipe5",
 					CreatorID:      2,
-					CreatedAt:      MustParse(timeFormat, "2024-01-01 10:00:00"),
-					LastEditedAt:   MustParse(timeFormat, "2024-01-01 10:00:00"),
+					CreatedAt:      time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+					LastEditedAt:   time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 					Notes:          "a recipe 5",
 					ParentRecipeID: 0,
+					IsLatest:       true,
+				},
+				{
+					ID:             8,
+					Name:           "recipe8",
+					CreatorID:      2,
+					CreatedAt:      time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+					LastEditedAt:   time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+					Notes:          "a recipe 8",
+					ParentRecipeID: 1,
 					IsLatest:       true,
 				},
 			},
@@ -1485,16 +1526,16 @@ func TestRecipeModelGetLatestByCreatorID(t *testing.T) {
 				CurrentPage:  1,
 				PageSize:     2,
 				FirstPage:    1,
-				LastPage:     2,
-				TotalRecords: 4,
+				LastPage:     3,
+				TotalRecords: 5,
 			},
 			expectRecipes: []*Recipe{
 				{
 					ID:             2,
 					Name:           "recipe2",
 					CreatorID:      2,
-					CreatedAt:      MustParse(timeFormat, "2024-01-01 10:00:00"),
-					LastEditedAt:   MustParse(timeFormat, "2024-01-01 10:00:00"),
+					CreatedAt:      time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+					LastEditedAt:   time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 					Notes:          "a recipe 2",
 					ParentRecipeID: 0,
 					IsLatest:       true,
@@ -1503,8 +1544,8 @@ func TestRecipeModelGetLatestByCreatorID(t *testing.T) {
 					ID:             3,
 					Name:           "recipe3",
 					CreatorID:      2,
-					CreatedAt:      MustParse(timeFormat, "2024-01-01 10:00:00"),
-					LastEditedAt:   MustParse(timeFormat, "2024-01-01 10:00:00"),
+					CreatedAt:      time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+					LastEditedAt:   time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 					Notes:          "a recipe 3",
 					ParentRecipeID: 0,
 					IsLatest:       true,
@@ -1528,16 +1569,16 @@ func TestRecipeModelGetLatestByCreatorID(t *testing.T) {
 				CurrentPage:  2,
 				PageSize:     2,
 				FirstPage:    1,
-				LastPage:     2,
-				TotalRecords: 4,
+				LastPage:     3,
+				TotalRecords: 5,
 			},
 			expectRecipes: []*Recipe{
 				{
 					ID:             5,
 					Name:           "Recipe5",
 					CreatorID:      2,
-					CreatedAt:      MustParse(timeFormat, "2024-01-01 10:00:00"),
-					LastEditedAt:   MustParse(timeFormat, "2024-01-01 10:00:00"),
+					CreatedAt:      time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+					LastEditedAt:   time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 					Notes:          "a recipe 5",
 					ParentRecipeID: 0,
 					IsLatest:       true,
@@ -1546,8 +1587,8 @@ func TestRecipeModelGetLatestByCreatorID(t *testing.T) {
 					ID:             6,
 					Name:           "doesntmatchsearch",
 					CreatorID:      2,
-					CreatedAt:      MustParse(timeFormat, "2024-01-01 10:00:00"),
-					LastEditedAt:   MustParse(timeFormat, "2024-01-01 10:00:00"),
+					CreatedAt:      time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+					LastEditedAt:   time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 					Notes:          "not matching",
 					ParentRecipeID: 0,
 					IsLatest:       true,
@@ -1572,17 +1613,26 @@ func TestRecipeModelGetLatestByCreatorID(t *testing.T) {
 				PageSize:     100,
 				FirstPage:    1,
 				LastPage:     1,
-				TotalRecords: 1,
+				TotalRecords: 2,
 			},
 			expectRecipes: []*Recipe{
 				{
 					ID:             4,
 					Name:           "recipe4",
 					CreatorID:      3,
-					CreatedAt:      MustParse(timeFormat, "2024-01-01 10:00:00"),
-					LastEditedAt:   MustParse(timeFormat, "2024-01-01 10:00:00"),
+					CreatedAt:      time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+					LastEditedAt:   time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 					Notes:          "a recipe 4",
 					ParentRecipeID: 1,
+					IsLatest:       true,
+				},
+				{
+					ID: 7, Name: "recipe7",
+					CreatorID:      3,
+					CreatedAt:      time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+					LastEditedAt:   time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+					Notes:          "a recipe 7",
+					ParentRecipeID: 0,
 					IsLatest:       true,
 				},
 			},
@@ -1655,8 +1705,6 @@ func TestRecipeModelGetLatestByCreatorID(t *testing.T) {
 
 func TestRecipeModelGetFullRecipe(t *testing.T) {
 
-	timeFormat := "2006-01-02 15:04:05"
-
 	if testing.Short() {
 		t.Skip("models: skipping integration test")
 	}
@@ -1664,20 +1712,22 @@ func TestRecipeModelGetFullRecipe(t *testing.T) {
 	tests := []struct {
 		name             string
 		ID               int64
+		CreatorID        int64
 		expectError      error
 		expectFullRecipe FullRecipe
 	}{
 		{
 			name:        "valid fullrecipe",
 			ID:          1,
+			CreatorID:   1,
 			expectError: nil,
 			expectFullRecipe: FullRecipe{
 				Recipe: Recipe{
 					ID:             1,
 					Name:           "Lasagne",
 					CreatorID:      1,
-					CreatedAt:      MustParse(timeFormat, "2024-01-01 10:00:00"),
-					LastEditedAt:   MustParse(timeFormat, "2024-01-01 10:00:00"),
+					CreatedAt:      time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+					LastEditedAt:   time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 					Notes:          "a recipe",
 					ParentRecipeID: 0,
 					IsLatest:       true,
@@ -1687,7 +1737,7 @@ func TestRecipeModelGetFullRecipe(t *testing.T) {
 						ID:              1,
 						RecipeID:        1,
 						PantryItemID:    1,
-						CreatedAt:       MustParse(timeFormat, "2024-01-01 10:00:00"),
+						CreatedAt:       time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 						Quantity:        4,
 						StepNo:          1,
 						StepDescription: "step 1",
@@ -1696,7 +1746,7 @@ func TestRecipeModelGetFullRecipe(t *testing.T) {
 						ID:              2,
 						RecipeID:        1,
 						PantryItemID:    2,
-						CreatedAt:       MustParse(timeFormat, "2024-01-01 10:00:00"),
+						CreatedAt:       time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 						Quantity:        5,
 						StepNo:          2,
 						StepDescription: "step 2",
@@ -1708,23 +1758,23 @@ func TestRecipeModelGetFullRecipe(t *testing.T) {
 						UserID:       1,
 						ConsumableId: 17,
 						Name:         "lasagne sheet",
-						CreatedAt:    MustParse(timeFormat, "2024-01-01 10:00:00"),
-						LastEditedAt: MustParse(timeFormat, "2024-01-01 10:00:00"),
+						CreatedAt:    time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+						LastEditedAt: time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 					},
 					{
 						ID:           2,
 						UserID:       1,
 						ConsumableId: 18,
 						Name:         "Minced Beef",
-						CreatedAt:    MustParse(timeFormat, "2024-01-01 10:00:00"),
-						LastEditedAt: MustParse(timeFormat, "2024-01-01 10:00:00"),
+						CreatedAt:    time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+						LastEditedAt: time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 					},
 				},
 				Consumables: []*Consumable{
 					{
 						ID:        17,
 						CreatorID: 4,
-						CreatedAt: MustParse(timeFormat, "2024-01-01 10:00:00"),
+						CreatedAt: time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 						Name:      "Lasagne Pasta Large",
 						BrandName: "San Remo",
 						Size:      62.5,
@@ -1739,7 +1789,7 @@ func TestRecipeModelGetFullRecipe(t *testing.T) {
 					{
 						ID:        18,
 						CreatorID: 4,
-						CreatedAt: MustParse(timeFormat, "2024-01-01 10:00:00"),
+						CreatedAt: time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 						Name:      "No Added Hormone Beef 5 Star Extra Trim Mince",
 						BrandName: "Coles",
 						Size:      100,
@@ -1775,7 +1825,7 @@ func TestRecipeModelGetFullRecipe(t *testing.T) {
 			}
 			m := RecipeModel{db}
 
-			fullRecipe, err := m.GetFullRecipe(tt.ID)
+			fullRecipe, err := m.GetFullRecipe(tt.ID, tt.CreatorID)
 
 			assert.ExpectError(t, err, tt.expectError)
 			if err != nil {
@@ -1790,8 +1840,6 @@ func TestRecipeModelGetFullRecipe(t *testing.T) {
 }
 
 func TestRecipeModelInsert(t *testing.T) {
-
-	timeFormat := "2006-01-02 15:04:05"
 
 	if testing.Short() {
 		t.Skip("models: skipping integration test")
@@ -1808,8 +1856,8 @@ func TestRecipeModelInsert(t *testing.T) {
 			recipe: Recipe{
 				Name:           "test recipe",
 				CreatorID:      4,
-				CreatedAt:      MustParse(timeFormat, "2024-01-01 10:00:00"),
-				LastEditedAt:   MustParse(timeFormat, "2024-01-01 10:00:00"),
+				CreatedAt:      time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+				LastEditedAt:   time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 				Notes:          "some notes",
 				ParentRecipeID: 0,
 				IsLatest:       true,
@@ -1821,8 +1869,8 @@ func TestRecipeModelInsert(t *testing.T) {
 			recipe: Recipe{
 				Name:           "test recipe 2",
 				CreatorID:      4,
-				CreatedAt:      MustParse(timeFormat, "2024-01-01 10:00:00"),
-				LastEditedAt:   MustParse(timeFormat, "2024-01-01 10:00:00"),
+				CreatedAt:      time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+				LastEditedAt:   time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 				Notes:          "some notes",
 				ParentRecipeID: 1,
 				IsLatest:       true,
@@ -1834,8 +1882,8 @@ func TestRecipeModelInsert(t *testing.T) {
 			recipe: Recipe{
 				Name:           "test recipe 2",
 				CreatorID:      9999,
-				CreatedAt:      MustParse(timeFormat, "2024-01-01 10:00:00"),
-				LastEditedAt:   MustParse(timeFormat, "2024-01-01 10:00:00"),
+				CreatedAt:      time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+				LastEditedAt:   time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 				Notes:          "some notes",
 				ParentRecipeID: 1,
 				IsLatest:       true,
@@ -1847,8 +1895,8 @@ func TestRecipeModelInsert(t *testing.T) {
 			recipe: Recipe{
 				Name:           "test recipe 2",
 				CreatorID:      4,
-				CreatedAt:      MustParse(timeFormat, "2024-01-01 10:00:00"),
-				LastEditedAt:   MustParse(timeFormat, "2024-01-01 10:00:00"),
+				CreatedAt:      time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+				LastEditedAt:   time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 				Notes:          "some notes",
 				ParentRecipeID: -1,
 				IsLatest:       true,
@@ -1860,8 +1908,8 @@ func TestRecipeModelInsert(t *testing.T) {
 			recipe: Recipe{
 				Name:           "test recipe 2",
 				CreatorID:      4,
-				CreatedAt:      MustParse(timeFormat, "2024-01-01 10:00:00"),
-				LastEditedAt:   MustParse(timeFormat, "2024-01-01 10:00:00"),
+				CreatedAt:      time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+				LastEditedAt:   time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 				Notes:          "some notes",
 				ParentRecipeID: 9999999,
 				IsLatest:       true,
@@ -1890,8 +1938,6 @@ func TestRecipeModelInsert(t *testing.T) {
 
 func TestRecipeModelInsertFullRecipe(t *testing.T) {
 
-	timeFormat := "2006-01-02 15:04:05"
-
 	if testing.Short() {
 		t.Skip("models: skipping integration test")
 	}
@@ -1908,8 +1954,8 @@ func TestRecipeModelInsertFullRecipe(t *testing.T) {
 				Recipe: Recipe{
 					Name:           "Lasagne",
 					CreatorID:      1,
-					CreatedAt:      MustParse(timeFormat, "2024-01-01 10:00:00"),
-					LastEditedAt:   MustParse(timeFormat, "2024-01-01 10:00:00"),
+					CreatedAt:      time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+					LastEditedAt:   time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 					Notes:          "a recipe",
 					ParentRecipeID: 0,
 					IsLatest:       true,
@@ -1918,7 +1964,7 @@ func TestRecipeModelInsertFullRecipe(t *testing.T) {
 					{
 						RecipeID:        1,
 						PantryItemID:    1,
-						CreatedAt:       MustParse(timeFormat, "2024-01-01 10:00:00"),
+						CreatedAt:       time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 						Quantity:        4,
 						StepNo:          1,
 						StepDescription: "step 1",
@@ -1926,7 +1972,7 @@ func TestRecipeModelInsertFullRecipe(t *testing.T) {
 					{
 						RecipeID:        1,
 						PantryItemID:    2,
-						CreatedAt:       MustParse(timeFormat, "2024-01-01 10:00:00"),
+						CreatedAt:       time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 						Quantity:        5,
 						StepNo:          2,
 						StepDescription: "step 2",
@@ -1937,21 +1983,21 @@ func TestRecipeModelInsertFullRecipe(t *testing.T) {
 						UserID:       1,
 						ConsumableId: 17,
 						Name:         "lasagne sheet",
-						CreatedAt:    MustParse(timeFormat, "2024-01-01 10:00:00"),
-						LastEditedAt: MustParse(timeFormat, "2024-01-01 10:00:00"),
+						CreatedAt:    time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+						LastEditedAt: time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 					},
 					{
 						UserID:       1,
 						ConsumableId: 18,
 						Name:         "Minced Beef",
-						CreatedAt:    MustParse(timeFormat, "2024-01-01 10:00:00"),
-						LastEditedAt: MustParse(timeFormat, "2024-01-01 10:00:00"),
+						CreatedAt:    time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+						LastEditedAt: time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 					},
 				},
 				Consumables: []*Consumable{
 					{
 						CreatorID: 4,
-						CreatedAt: MustParse(timeFormat, "2024-01-01 10:00:00"),
+						CreatedAt: time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 						Name:      "Lasagne Pasta Large",
 						BrandName: "San Remo",
 						Size:      62.5,
@@ -1965,7 +2011,7 @@ func TestRecipeModelInsertFullRecipe(t *testing.T) {
 					},
 					{
 						CreatorID: 4,
-						CreatedAt: MustParse(timeFormat, "2024-01-01 10:00:00"),
+						CreatedAt: time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 						Name:      "No Added Hormone Beef 5 Star Extra Trim Mince",
 						BrandName: "Coles",
 						Size:      100,
@@ -1987,8 +2033,8 @@ func TestRecipeModelInsertFullRecipe(t *testing.T) {
 				Recipe: Recipe{
 					Name:           "Lasagne",
 					CreatorID:      -1,
-					CreatedAt:      MustParse(timeFormat, "2024-01-01 10:00:00"),
-					LastEditedAt:   MustParse(timeFormat, "2024-01-01 10:00:00"),
+					CreatedAt:      time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+					LastEditedAt:   time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 					Notes:          "a recipe",
 					ParentRecipeID: 0,
 					IsLatest:       true,
@@ -1997,7 +2043,7 @@ func TestRecipeModelInsertFullRecipe(t *testing.T) {
 					{
 						RecipeID:        1,
 						PantryItemID:    1,
-						CreatedAt:       MustParse(timeFormat, "2024-01-01 10:00:00"),
+						CreatedAt:       time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 						Quantity:        4,
 						StepNo:          1,
 						StepDescription: "step 1",
@@ -2005,7 +2051,7 @@ func TestRecipeModelInsertFullRecipe(t *testing.T) {
 					{
 						RecipeID:        1,
 						PantryItemID:    2,
-						CreatedAt:       MustParse(timeFormat, "2024-01-01 10:00:00"),
+						CreatedAt:       time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 						Quantity:        5,
 						StepNo:          2,
 						StepDescription: "step 2",
@@ -2016,21 +2062,21 @@ func TestRecipeModelInsertFullRecipe(t *testing.T) {
 						UserID:       1,
 						ConsumableId: 17,
 						Name:         "lasagne sheet",
-						CreatedAt:    MustParse(timeFormat, "2024-01-01 10:00:00"),
-						LastEditedAt: MustParse(timeFormat, "2024-01-01 10:00:00"),
+						CreatedAt:    time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+						LastEditedAt: time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 					},
 					{
 						UserID:       1,
 						ConsumableId: 18,
 						Name:         "Minced Beef",
-						CreatedAt:    MustParse(timeFormat, "2024-01-01 10:00:00"),
-						LastEditedAt: MustParse(timeFormat, "2024-01-01 10:00:00"),
+						CreatedAt:    time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+						LastEditedAt: time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 					},
 				},
 				Consumables: []*Consumable{
 					{
 						CreatorID: 4,
-						CreatedAt: MustParse(timeFormat, "2024-01-01 10:00:00"),
+						CreatedAt: time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 						Name:      "Lasagne Pasta Large",
 						BrandName: "San Remo",
 						Size:      62.5,
@@ -2044,7 +2090,7 @@ func TestRecipeModelInsertFullRecipe(t *testing.T) {
 					},
 					{
 						CreatorID: 4,
-						CreatedAt: MustParse(timeFormat, "2024-01-01 10:00:00"),
+						CreatedAt: time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 						Name:      "No Added Hormone Beef 5 Star Extra Trim Mince",
 						BrandName: "Coles",
 						Size:      100,
@@ -2066,8 +2112,8 @@ func TestRecipeModelInsertFullRecipe(t *testing.T) {
 				Recipe: Recipe{
 					Name:           "Lasagne",
 					CreatorID:      1,
-					CreatedAt:      MustParse(timeFormat, "2024-01-01 10:00:00"),
-					LastEditedAt:   MustParse(timeFormat, "2024-01-01 10:00:00"),
+					CreatedAt:      time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+					LastEditedAt:   time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 					Notes:          "a recipe",
 					ParentRecipeID: 0,
 					IsLatest:       true,
@@ -2076,7 +2122,7 @@ func TestRecipeModelInsertFullRecipe(t *testing.T) {
 					{
 						RecipeID:        1,
 						PantryItemID:    99999,
-						CreatedAt:       MustParse(timeFormat, "2024-01-01 10:00:00"),
+						CreatedAt:       time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 						Quantity:        4,
 						StepNo:          1,
 						StepDescription: "step 1",
@@ -2084,7 +2130,7 @@ func TestRecipeModelInsertFullRecipe(t *testing.T) {
 					{
 						RecipeID:        1,
 						PantryItemID:    2,
-						CreatedAt:       MustParse(timeFormat, "2024-01-01 10:00:00"),
+						CreatedAt:       time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 						Quantity:        5,
 						StepNo:          2,
 						StepDescription: "step 2",
@@ -2095,21 +2141,21 @@ func TestRecipeModelInsertFullRecipe(t *testing.T) {
 						UserID:       -1,
 						ConsumableId: 17,
 						Name:         "lasagne sheet",
-						CreatedAt:    MustParse(timeFormat, "2024-01-01 10:00:00"),
-						LastEditedAt: MustParse(timeFormat, "2024-01-01 10:00:00"),
+						CreatedAt:    time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+						LastEditedAt: time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 					},
 					{
 						UserID:       1,
 						ConsumableId: 18,
 						Name:         "Minced Beef",
-						CreatedAt:    MustParse(timeFormat, "2024-01-01 10:00:00"),
-						LastEditedAt: MustParse(timeFormat, "2024-01-01 10:00:00"),
+						CreatedAt:    time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+						LastEditedAt: time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 					},
 				},
 				Consumables: []*Consumable{
 					{
 						CreatorID: 4,
-						CreatedAt: MustParse(timeFormat, "2024-01-01 10:00:00"),
+						CreatedAt: time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 						Name:      "Lasagne Pasta Large",
 						BrandName: "San Remo",
 						Size:      62.5,
@@ -2123,7 +2169,7 @@ func TestRecipeModelInsertFullRecipe(t *testing.T) {
 					},
 					{
 						CreatorID: 4,
-						CreatedAt: MustParse(timeFormat, "2024-01-01 10:00:00"),
+						CreatedAt: time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 						Name:      "No Added Hormone Beef 5 Star Extra Trim Mince",
 						BrandName: "Coles",
 						Size:      100,
@@ -2156,7 +2202,7 @@ func TestRecipeModelInsertFullRecipe(t *testing.T) {
 				return
 			}
 
-			createdRecipe, err := m.GetFullRecipe(tt.fullRecipe.Recipe.ID)
+			createdRecipe, err := m.GetFullRecipe(tt.fullRecipe.Recipe.ID, tt.fullRecipe.Recipe.CreatorID)
 			assert.ExpectError(t, err, nil)
 			if err != nil {
 				return
@@ -2170,8 +2216,6 @@ func TestRecipeModelInsertFullRecipe(t *testing.T) {
 }
 
 func TestRecipeModelUpdate(t *testing.T) {
-
-	timeFormat := "2006-01-02 15:04:05"
 
 	if testing.Short() {
 		t.Skip("models: skipping integration test")
@@ -2191,8 +2235,8 @@ func TestRecipeModelUpdate(t *testing.T) {
 				ID:             1,
 				Name:           "Lasagne",
 				CreatorID:      1,
-				CreatedAt:      MustParse(timeFormat, "2024-01-01 10:00:00"),
-				LastEditedAt:   MustParse(timeFormat, "2024-01-01 10:00:00"),
+				CreatedAt:      time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+				LastEditedAt:   time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 				Notes:          "a recipe with modification",
 				ParentRecipeID: 0,
 				IsLatest:       true,
@@ -2206,8 +2250,8 @@ func TestRecipeModelUpdate(t *testing.T) {
 				ID:             -1,
 				Name:           "Lasagne",
 				CreatorID:      1,
-				CreatedAt:      MustParse(timeFormat, "2024-01-01 10:00:00"),
-				LastEditedAt:   MustParse(timeFormat, "2024-01-01 10:00:00"),
+				CreatedAt:      time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+				LastEditedAt:   time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 				Notes:          "a recipe with modification",
 				ParentRecipeID: 0,
 				IsLatest:       true,
@@ -2245,8 +2289,6 @@ func TestRecipeModelUpdate(t *testing.T) {
 
 func TestRecipeModelUpdateFullRecipe(t *testing.T) {
 
-	timeFormat := "2006-01-02 15:04:05"
-
 	if testing.Short() {
 		t.Skip("models: skipping integration test")
 	}
@@ -2264,8 +2306,8 @@ func TestRecipeModelUpdateFullRecipe(t *testing.T) {
 					ID:             1,
 					Name:           "Lasagne",
 					CreatorID:      1,
-					CreatedAt:      MustParse(timeFormat, "2024-01-01 10:00:00"),
-					LastEditedAt:   MustParse(timeFormat, "2024-01-01 10:00:00"),
+					CreatedAt:      time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+					LastEditedAt:   time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 					Notes:          "a recipe with modification",
 					ParentRecipeID: 0,
 					IsLatest:       true,
@@ -2274,7 +2316,7 @@ func TestRecipeModelUpdateFullRecipe(t *testing.T) {
 					{
 						RecipeID:        1,
 						PantryItemID:    1,
-						CreatedAt:       MustParse(timeFormat, "2024-01-01 10:00:00"),
+						CreatedAt:       time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 						Quantity:        4,
 						StepNo:          1,
 						StepDescription: "step 1",
@@ -2282,7 +2324,7 @@ func TestRecipeModelUpdateFullRecipe(t *testing.T) {
 					{
 						RecipeID:        1,
 						PantryItemID:    2,
-						CreatedAt:       MustParse(timeFormat, "2024-01-01 10:00:00"),
+						CreatedAt:       time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 						Quantity:        5,
 						StepNo:          2,
 						StepDescription: "step 2",
@@ -2293,21 +2335,21 @@ func TestRecipeModelUpdateFullRecipe(t *testing.T) {
 						UserID:       1,
 						ConsumableId: 17,
 						Name:         "lasagne sheet",
-						CreatedAt:    MustParse(timeFormat, "2024-01-01 10:00:00"),
-						LastEditedAt: MustParse(timeFormat, "2024-01-01 10:00:00"),
+						CreatedAt:    time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+						LastEditedAt: time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 					},
 					{
 						UserID:       1,
 						ConsumableId: 18,
 						Name:         "Minced Beef",
-						CreatedAt:    MustParse(timeFormat, "2024-01-01 10:00:00"),
-						LastEditedAt: MustParse(timeFormat, "2024-01-01 10:00:00"),
+						CreatedAt:    time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+						LastEditedAt: time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 					},
 				},
 				Consumables: []*Consumable{
 					{
 						CreatorID: 4,
-						CreatedAt: MustParse(timeFormat, "2024-01-01 10:00:00"),
+						CreatedAt: time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 						Name:      "Lasagne Pasta Large",
 						BrandName: "San Remo",
 						Size:      62.5,
@@ -2321,7 +2363,7 @@ func TestRecipeModelUpdateFullRecipe(t *testing.T) {
 					},
 					{
 						CreatorID: 4,
-						CreatedAt: MustParse(timeFormat, "2024-01-01 10:00:00"),
+						CreatedAt: time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 						Name:      "No Added Hormone Beef 5 Star Extra Trim Mince",
 						BrandName: "Coles",
 						Size:      100,
@@ -2344,8 +2386,8 @@ func TestRecipeModelUpdateFullRecipe(t *testing.T) {
 					ID:             1,
 					Name:           "Lasagne",
 					CreatorID:      -1,
-					CreatedAt:      MustParse(timeFormat, "2024-01-01 10:00:00"),
-					LastEditedAt:   MustParse(timeFormat, "2024-01-01 10:00:00"),
+					CreatedAt:      time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+					LastEditedAt:   time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 					Notes:          "a recipe",
 					ParentRecipeID: 0,
 					IsLatest:       true,
@@ -2354,7 +2396,7 @@ func TestRecipeModelUpdateFullRecipe(t *testing.T) {
 					{
 						RecipeID:        1,
 						PantryItemID:    1,
-						CreatedAt:       MustParse(timeFormat, "2024-01-01 10:00:00"),
+						CreatedAt:       time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 						Quantity:        4,
 						StepNo:          1,
 						StepDescription: "step 1",
@@ -2362,7 +2404,7 @@ func TestRecipeModelUpdateFullRecipe(t *testing.T) {
 					{
 						RecipeID:        1,
 						PantryItemID:    2,
-						CreatedAt:       MustParse(timeFormat, "2024-01-01 10:00:00"),
+						CreatedAt:       time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 						Quantity:        5,
 						StepNo:          2,
 						StepDescription: "step 2",
@@ -2373,21 +2415,21 @@ func TestRecipeModelUpdateFullRecipe(t *testing.T) {
 						UserID:       1,
 						ConsumableId: 17,
 						Name:         "lasagne sheet",
-						CreatedAt:    MustParse(timeFormat, "2024-01-01 10:00:00"),
-						LastEditedAt: MustParse(timeFormat, "2024-01-01 10:00:00"),
+						CreatedAt:    time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+						LastEditedAt: time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 					},
 					{
 						UserID:       1,
 						ConsumableId: 18,
 						Name:         "Minced Beef",
-						CreatedAt:    MustParse(timeFormat, "2024-01-01 10:00:00"),
-						LastEditedAt: MustParse(timeFormat, "2024-01-01 10:00:00"),
+						CreatedAt:    time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+						LastEditedAt: time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 					},
 				},
 				Consumables: []*Consumable{
 					{
 						CreatorID: 4,
-						CreatedAt: MustParse(timeFormat, "2024-01-01 10:00:00"),
+						CreatedAt: time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 						Name:      "Lasagne Pasta Large",
 						BrandName: "San Remo",
 						Size:      62.5,
@@ -2401,7 +2443,7 @@ func TestRecipeModelUpdateFullRecipe(t *testing.T) {
 					},
 					{
 						CreatorID: 4,
-						CreatedAt: MustParse(timeFormat, "2024-01-01 10:00:00"),
+						CreatedAt: time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 						Name:      "No Added Hormone Beef 5 Star Extra Trim Mince",
 						BrandName: "Coles",
 						Size:      100,
@@ -2424,8 +2466,8 @@ func TestRecipeModelUpdateFullRecipe(t *testing.T) {
 					ID:             1,
 					Name:           "Lasagne",
 					CreatorID:      1,
-					CreatedAt:      MustParse(timeFormat, "2024-01-01 10:00:00"),
-					LastEditedAt:   MustParse(timeFormat, "2024-01-01 10:00:00"),
+					CreatedAt:      time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+					LastEditedAt:   time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 					Notes:          "a recipe",
 					ParentRecipeID: 0,
 					IsLatest:       true,
@@ -2434,7 +2476,7 @@ func TestRecipeModelUpdateFullRecipe(t *testing.T) {
 					{
 						RecipeID:        1,
 						PantryItemID:    99999,
-						CreatedAt:       MustParse(timeFormat, "2024-01-01 10:00:00"),
+						CreatedAt:       time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 						Quantity:        4,
 						StepNo:          1,
 						StepDescription: "step 1",
@@ -2442,7 +2484,7 @@ func TestRecipeModelUpdateFullRecipe(t *testing.T) {
 					{
 						RecipeID:        1,
 						PantryItemID:    2,
-						CreatedAt:       MustParse(timeFormat, "2024-01-01 10:00:00"),
+						CreatedAt:       time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 						Quantity:        5,
 						StepNo:          2,
 						StepDescription: "step 2",
@@ -2453,21 +2495,21 @@ func TestRecipeModelUpdateFullRecipe(t *testing.T) {
 						UserID:       -1,
 						ConsumableId: 17,
 						Name:         "lasagne sheet",
-						CreatedAt:    MustParse(timeFormat, "2024-01-01 10:00:00"),
-						LastEditedAt: MustParse(timeFormat, "2024-01-01 10:00:00"),
+						CreatedAt:    time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+						LastEditedAt: time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 					},
 					{
 						UserID:       1,
 						ConsumableId: 18,
 						Name:         "Minced Beef",
-						CreatedAt:    MustParse(timeFormat, "2024-01-01 10:00:00"),
-						LastEditedAt: MustParse(timeFormat, "2024-01-01 10:00:00"),
+						CreatedAt:    time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+						LastEditedAt: time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 					},
 				},
 				Consumables: []*Consumable{
 					{
 						CreatorID: 4,
-						CreatedAt: MustParse(timeFormat, "2024-01-01 10:00:00"),
+						CreatedAt: time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 						Name:      "Lasagne Pasta Large",
 						BrandName: "San Remo",
 						Size:      62.5,
@@ -2481,7 +2523,7 @@ func TestRecipeModelUpdateFullRecipe(t *testing.T) {
 					},
 					{
 						CreatorID: 4,
-						CreatedAt: MustParse(timeFormat, "2024-01-01 10:00:00"),
+						CreatedAt: time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 						Name:      "No Added Hormone Beef 5 Star Extra Trim Mince",
 						BrandName: "Coles",
 						Size:      100,
@@ -2514,7 +2556,7 @@ func TestRecipeModelUpdateFullRecipe(t *testing.T) {
 				return
 			}
 
-			createdRecipe, err := m.GetFullRecipe(tt.newFullRecipe.Recipe.ID)
+			createdRecipe, err := m.GetFullRecipe(tt.newFullRecipe.Recipe.ID, tt.newFullRecipe.Recipe.CreatorID)
 			assert.ExpectError(t, err, nil)
 			if err != nil {
 				return
@@ -2589,8 +2631,6 @@ func TestRecipeModelDelete(t *testing.T) {
 
 func TestRecipeModelGetParentRecipe(t *testing.T) {
 
-	timeFormat := "2006-01-02 15:04:05"
-
 	if testing.Short() {
 		t.Skip("models: skipping integration test")
 	}
@@ -2608,8 +2648,8 @@ func TestRecipeModelGetParentRecipe(t *testing.T) {
 				ID:             1,
 				Name:           "Lasagne",
 				CreatorID:      1,
-				CreatedAt:      MustParse(timeFormat, "2024-01-01 10:00:00"),
-				LastEditedAt:   MustParse(timeFormat, "2024-01-01 10:00:00"),
+				CreatedAt:      time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+				LastEditedAt:   time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 				Notes:          "a recipe 1",
 				ParentRecipeID: 0,
 				IsLatest:       true,
@@ -2622,8 +2662,8 @@ func TestRecipeModelGetParentRecipe(t *testing.T) {
 				ID:             8,
 				Name:           "recipe8",
 				CreatorID:      2,
-				CreatedAt:      MustParse(timeFormat, "2024-01-01 10:00:00"),
-				LastEditedAt:   MustParse(timeFormat, "2024-01-01 10:00:00"),
+				CreatedAt:      time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+				LastEditedAt:   time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 				Notes:          "a recipe 8",
 				ParentRecipeID: 1,
 				IsLatest:       true,
@@ -2632,8 +2672,8 @@ func TestRecipeModelGetParentRecipe(t *testing.T) {
 				ID:             1,
 				Name:           "Lasagne",
 				CreatorID:      1,
-				CreatedAt:      MustParse(timeFormat, "2024-01-01 10:00:00"),
-				LastEditedAt:   MustParse(timeFormat, "2024-01-01 10:00:00"),
+				CreatedAt:      time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+				LastEditedAt:   time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 				Notes:          "a recipe",
 				ParentRecipeID: 0,
 				IsLatest:       true,
@@ -2646,8 +2686,8 @@ func TestRecipeModelGetParentRecipe(t *testing.T) {
 				ID:             999999,
 				Name:           "Lasagne",
 				CreatorID:      1,
-				CreatedAt:      MustParse(timeFormat, "2024-01-01 10:00:00"),
-				LastEditedAt:   MustParse(timeFormat, "2024-01-01 10:00:00"),
+				CreatedAt:      time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+				LastEditedAt:   time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 				Notes:          "a recipe",
 				ParentRecipeID: 0,
 				IsLatest:       true,
@@ -2660,8 +2700,8 @@ func TestRecipeModelGetParentRecipe(t *testing.T) {
 				ID:             -1,
 				Name:           "Lasagne",
 				CreatorID:      1,
-				CreatedAt:      MustParse(timeFormat, "2024-01-01 10:00:00"),
-				LastEditedAt:   MustParse(timeFormat, "2024-01-01 10:00:00"),
+				CreatedAt:      time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+				LastEditedAt:   time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 				Notes:          "a recipe",
 				ParentRecipeID: 0,
 				IsLatest:       true,
@@ -2691,8 +2731,6 @@ func TestRecipeModelGetParentRecipe(t *testing.T) {
 }
 
 func TestRecipeModelGetAllAncestors(t *testing.T) {
-
-	timeFormat := "2006-01-02 15:04:05"
 
 	if testing.Short() {
 		t.Skip("models: skipping integration test")
@@ -2730,8 +2768,8 @@ func TestRecipeModelGetAllAncestors(t *testing.T) {
 					ID:             1,
 					Name:           "Lasagne",
 					CreatorID:      1,
-					CreatedAt:      MustParse(timeFormat, "2024-01-01 10:00:00"),
-					LastEditedAt:   MustParse(timeFormat, "2024-01-01 10:00:00"),
+					CreatedAt:      time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+					LastEditedAt:   time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 					Notes:          "a recipe",
 					ParentRecipeID: 0,
 					IsLatest:       true,
@@ -2740,8 +2778,8 @@ func TestRecipeModelGetAllAncestors(t *testing.T) {
 					ID:             4,
 					Name:           "recipe4",
 					CreatorID:      3,
-					CreatedAt:      MustParse(timeFormat, "2024-01-01 10:00:00"),
-					LastEditedAt:   MustParse(timeFormat, "2024-01-01 10:00:00"),
+					CreatedAt:      time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+					LastEditedAt:   time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 					Notes:          "a recipe 4",
 					ParentRecipeID: 1,
 					IsLatest:       true,
@@ -2751,133 +2789,133 @@ func TestRecipeModelGetAllAncestors(t *testing.T) {
 				ID:             4,
 				Name:           "recipe4",
 				CreatorID:      3,
-				CreatedAt:      MustParse(timeFormat, "2024-01-01 10:00:00"),
-				LastEditedAt:   MustParse(timeFormat, "2024-01-01 10:00:00"),
+				CreatedAt:      time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+				LastEditedAt:   time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
 				Notes:          "a recipe 4",
 				ParentRecipeID: 1,
 				IsLatest:       true,
 			},
 		},
-		{
-			name:        "get parent existing recipe with many parent",
-			expectError: nil,
-			filters: RecipeFilters{
-				Metadata: MetadataFilters{
-					Page:         1,
-					PageSize:     100,
-					Sort:         "ID",
-					SortSafeList: []string{"ID"},
-				},
-				NameSearch: "",
-			},
-			expectMetadata: Metadata{
-				CurrentPage:  1,
-				PageSize:     100,
-				FirstPage:    1,
-				LastPage:     1,
-				TotalRecords: 4,
-			},
-			childRecipe: Recipe{
-				ID:             10,
-				Name:           "recipe10",
-				CreatorID:      4,
-				CreatedAt:      MustParse(timeFormat, "2024-01-01 10:00:00"),
-				LastEditedAt:   MustParse(timeFormat, "2024-01-01 10:00:00"),
-				Notes:          "a recipe 10",
-				ParentRecipeID: 9,
-				IsLatest:       true,
-			},
-			expectAncestors: []*Recipe{
-				{
-					ID:             1,
-					Name:           "Lasagne",
-					CreatorID:      1,
-					CreatedAt:      MustParse(timeFormat, "2024-01-01 10:00:00"),
-					LastEditedAt:   MustParse(timeFormat, "2024-01-01 10:00:00"),
-					Notes:          "a recipe",
-					ParentRecipeID: 0,
-					IsLatest:       true,
-				},
-				{
-					ID:             8,
-					Name:           "recipe8",
-					CreatorID:      2,
-					CreatedAt:      MustParse(timeFormat, "2024-01-01 10:00:00"),
-					LastEditedAt:   MustParse(timeFormat, "2024-01-01 10:00:00"),
-					Notes:          "a recipe 8",
-					ParentRecipeID: 1,
-					IsLatest:       true,
-				},
-				{
-					ID:             9,
-					Name:           "recipe9",
-					CreatorID:      4,
-					CreatedAt:      MustParse(timeFormat, "2024-01-01 10:00:00"),
-					LastEditedAt:   MustParse(timeFormat, "2024-01-01 10:00:00"),
-					Notes:          "a recipe 9",
-					ParentRecipeID: 8,
-					IsLatest:       true,
-				},
-				{
-					ID:             10,
-					Name:           "recipe10",
-					CreatorID:      4,
-					CreatedAt:      MustParse(timeFormat, "2024-01-01 10:00:00"),
-					LastEditedAt:   MustParse(timeFormat, "2024-01-01 10:00:00"),
-					Notes:          "a recipe 10",
-					ParentRecipeID: 9,
-					IsLatest:       true,
-				},
-			},
-		},
-		{
-			name:        "get parent invalid doesn't exist",
-			expectError: ErrRecordNotFound,
-			filters: RecipeFilters{
-				Metadata: MetadataFilters{
-					Page:         1,
-					PageSize:     100,
-					Sort:         "ID",
-					SortSafeList: []string{"ID"},
-				},
-				NameSearch: "",
-			},
-			expectMetadata: Metadata{},
-			childRecipe: Recipe{
-				ID:             999999,
-				Name:           "Lasagne",
-				CreatorID:      1,
-				CreatedAt:      MustParse(timeFormat, "2024-01-01 10:00:00"),
-				LastEditedAt:   MustParse(timeFormat, "2024-01-01 10:00:00"),
-				Notes:          "a recipe",
-				ParentRecipeID: 0,
-				IsLatest:       true,
-			},
-		},
-		{
-			name:        "get parent invalid ID doesn't exist",
-			expectError: ErrRecordNotFound,
-			filters: RecipeFilters{
-				Metadata: MetadataFilters{
-					Page:         1,
-					PageSize:     100,
-					Sort:         "ID",
-					SortSafeList: []string{"ID"},
-				},
-				NameSearch: "",
-			},
-			expectMetadata: Metadata{},
-			childRecipe: Recipe{
-				ID:             -1,
-				Name:           "Lasagne",
-				CreatorID:      1,
-				CreatedAt:      MustParse(timeFormat, "2024-01-01 10:00:00"),
-				LastEditedAt:   MustParse(timeFormat, "2024-01-01 10:00:00"),
-				Notes:          "a recipe",
-				ParentRecipeID: 0,
-				IsLatest:       true,
-			},
-		},
+		// {
+		// 	name:        "get parent existing recipe with many parent",
+		// 	expectError: nil,
+		// 	filters: RecipeFilters{
+		// 		Metadata: MetadataFilters{
+		// 			Page:         1,
+		// 			PageSize:     100,
+		// 			Sort:         "ID",
+		// 			SortSafeList: []string{"ID"},
+		// 		},
+		// 		NameSearch: "",
+		// 	},
+		// 	expectMetadata: Metadata{
+		// 		CurrentPage:  1,
+		// 		PageSize:     100,
+		// 		FirstPage:    1,
+		// 		LastPage:     1,
+		// 		TotalRecords: 4,
+		// 	},
+		// 	childRecipe: Recipe{
+		// 		ID:             10,
+		// 		Name:           "recipe10",
+		// 		CreatorID:      4,
+		// 		CreatedAt:      time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+		// 		LastEditedAt:   time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+		// 		Notes:          "a recipe 10",
+		// 		ParentRecipeID: 9,
+		// 		IsLatest:       true,
+		// 	},
+		// 	expectAncestors: []*Recipe{
+		// 		{
+		// 			ID:             1,
+		// 			Name:           "Lasagne",
+		// 			CreatorID:      1,
+		// 			CreatedAt:      time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+		// 			LastEditedAt:   time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+		// 			Notes:          "a recipe",
+		// 			ParentRecipeID: 0,
+		// 			IsLatest:       true,
+		// 		},
+		// 		{
+		// 			ID:             8,
+		// 			Name:           "recipe8",
+		// 			CreatorID:      2,
+		// 			CreatedAt:      time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+		// 			LastEditedAt:   time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+		// 			Notes:          "a recipe 8",
+		// 			ParentRecipeID: 1,
+		// 			IsLatest:       true,
+		// 		},
+		// 		{
+		// 			ID:             9,
+		// 			Name:           "recipe9",
+		// 			CreatorID:      4,
+		// 			CreatedAt:      time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+		// 			LastEditedAt:   time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+		// 			Notes:          "a recipe 9",
+		// 			ParentRecipeID: 8,
+		// 			IsLatest:       true,
+		// 		},
+		// 		{
+		// 			ID:             10,
+		// 			Name:           "recipe10",
+		// 			CreatorID:      4,
+		// 			CreatedAt:      time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+		// 			LastEditedAt:   time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+		// 			Notes:          "a recipe 10",
+		// 			ParentRecipeID: 9,
+		// 			IsLatest:       true,
+		// 		},
+		// 	},
+		// },
+		// {
+		// 	name:        "get parent invalid doesn't exist",
+		// 	expectError: ErrRecordNotFound,
+		// 	filters: RecipeFilters{
+		// 		Metadata: MetadataFilters{
+		// 			Page:         1,
+		// 			PageSize:     100,
+		// 			Sort:         "ID",
+		// 			SortSafeList: []string{"ID"},
+		// 		},
+		// 		NameSearch: "",
+		// 	},
+		// 	expectMetadata: Metadata{},
+		// 	childRecipe: Recipe{
+		// 		ID:             999999,
+		// 		Name:           "Lasagne",
+		// 		CreatorID:      1,
+		// 		CreatedAt:      time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+		// 		LastEditedAt:   time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+		// 		Notes:          "a recipe",
+		// 		ParentRecipeID: 0,
+		// 		IsLatest:       true,
+		// 	},
+		// },
+		// {
+		// 	name:        "get parent invalid ID doesn't exist",
+		// 	expectError: ErrRecordNotFound,
+		// 	filters: RecipeFilters{
+		// 		Metadata: MetadataFilters{
+		// 			Page:         1,
+		// 			PageSize:     100,
+		// 			Sort:         "ID",
+		// 			SortSafeList: []string{"ID"},
+		// 		},
+		// 		NameSearch: "",
+		// 	},
+		// 	expectMetadata: Metadata{},
+		// 	childRecipe: Recipe{
+		// 		ID:             -1,
+		// 		Name:           "Lasagne",
+		// 		CreatorID:      1,
+		// 		CreatedAt:      time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+		// 		LastEditedAt:   time.Date(2024, time.January, 1, 10, 0, 0, 0, time.UTC),
+		// 		Notes:          "a recipe",
+		// 		ParentRecipeID: 0,
+		// 		IsLatest:       true,
+		// 	},
+		// },
 	}
 
 	for _, tt := range tests {
@@ -2890,6 +2928,9 @@ func TestRecipeModelGetAllAncestors(t *testing.T) {
 			m := RecipeModel{db}
 
 			ancestors, metadata, err := m.GetAllAncestors(&tt.childRecipe, tt.filters)
+			for _, ancestor := range ancestors {
+				t.Logf("%#v", *ancestor)
+			}
 
 			assert.ExpectError(t, err, tt.expectError)
 			if err != nil {

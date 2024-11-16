@@ -8,15 +8,21 @@ func (m RecipeModelMock) Get(ID int64) (*data.Recipe, error) {
 	return nil, nil
 }
 
-func (m RecipeModelMock) GetByCreatorID(int64, data.RecipeFilters) ([]*data.Recipe, data.Metadata, error) {
-	return nil, data.Metadata{}, nil
+func (m RecipeModelMock) GetByCreatorID(creatorID int64, filters data.RecipeFilters) ([]*data.Recipe, data.Metadata, error) {
+
+	switch creatorID {
+	case 1:
+		return []*data.Recipe{}, data.Metadata{}, nil
+	default:
+		return []*data.Recipe{}, data.Metadata{}, nil
+	}
 }
 
 func (m RecipeModelMock) GetLatestByCreatorID(int64, data.RecipeFilters) ([]*data.Recipe, data.Metadata, error) {
 	return nil, data.Metadata{}, nil
 }
 
-func (m RecipeModelMock) GetFullRecipe(int64) (*data.FullRecipe, error) {
+func (m RecipeModelMock) GetFullRecipe(int64, int64) (*data.FullRecipe, error) {
 	return nil, nil
 }
 

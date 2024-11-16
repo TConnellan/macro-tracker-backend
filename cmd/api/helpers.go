@@ -132,6 +132,22 @@ func (app *application) readInt(qs url.Values, key string, defaultValue int, v *
 	return i
 }
 
+func (app *application) readBool(qs url.Values, key string, defaultValue bool, v *validator.Validator) bool {
+	s := qs.Get(key)
+
+	if s == "" {
+		return defaultValue
+	}
+
+	i, err := strconv.ParseBool(s)
+	if err != nil {
+		v.AddError(key, "must be a boolean")
+		return defaultValue
+	}
+
+	return i
+}
+
 func (app *application) background(fn func()) {
 
 	go func() {

@@ -8,10 +8,10 @@ func (m RecipeComponentModelMock) Get(ID int64) (*data.RecipeComponent, error) {
 	return nil, nil
 }
 
-func (m RecipeComponentModelMock) Insert(*data.RecipeComponent) error {
+func (m RecipeComponentModelMock) Insert(recipeComponent *data.RecipeComponent) error {
 	return nil
 }
 
-func (m RecipeComponentModelMock) Update(*data.RecipeComponent) error {
+func (m RecipeComponentModelMock) Update(recipeComponent *data.RecipeComponent, userId int64) error {
 	return nil
 }
