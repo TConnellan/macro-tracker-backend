@@ -110,7 +110,7 @@ type IRecipeModel interface {
 	Get(int64) (*Recipe, error)
 	GetByCreatorID(int64, RecipeFilters) ([]*Recipe, Metadata, error)
 	GetLatestByCreatorID(int64, RecipeFilters) ([]*Recipe, Metadata, error)
-	GetFullRecipe(int64) (*FullRecipe, error)
+	GetFullRecipe(int64, int64) (*FullRecipe, error)
 	Insert(*Recipe) error
 	InsertFullRecipe(*FullRecipe) error
 	Update(*Recipe) error
@@ -180,7 +180,7 @@ func (m RecipeModel) GetByCreatorID(ID int64, filters RecipeFilters) ([]*Recipe,
 	defer rows.Close()
 
 	var recordCount int = 0
-	var recipes []*Recipe
+	var recipes []*Recipe = []*Recipe{}
 
 	for rows.Next() {
 		var recipe Recipe
@@ -229,7 +229,7 @@ func (m RecipeModel) GetLatestByCreatorID(ID int64, filters RecipeFilters) ([]*R
 	defer rows.Close()
 
 	var recordCount int = 0
-	var recipes []*Recipe
+	recipes := []*Recipe{}
 
 	for rows.Next() {
 		var recipe Recipe
@@ -257,21 +257,12 @@ func (m RecipeModel) GetLatestByCreatorID(ID int64, filters RecipeFilters) ([]*R
 	return recipes, calculateMetadata(recordCount, filters.Metadata.Page, filters.Metadata.PageSize), nil
 }
 
-func (m RecipeModel) GetFullRecipe(ID int64) (*FullRecipe, error) {
+func (m RecipeModel) GetFullRecipe(ID int64, userID int64) (*FullRecipe, error) {
 	// join recipe on componets first, then join components on consumables
 	stmtRecipe := `
 	SELECT id, recipe_name, creator_id, created_at, last_edited_at, notes, COALESCE(parent_recipe_id, 0), is_latest
 	FROM recipes
-	WHERE id = $1
-	`
-
-	stmtComponents := `
-	SELECT RC.id, RC.recipe_id, RC.pantry_item_id, RC.created_at, RC.quantity, RC.step_no, RC.step_description, P.id, P.user_id, P.consumable_id, P.name, P.created_at, P.last_modified, C.id, C.creator_id, C.created_at, C.name, C.brand_name, C.size, C.units, C.carbs, C.fats, C.proteins, C.alcohol
-	FROM recipe_components RC 
-	     INNER JOIN pantry_items P ON RC.pantry_item_id = P.id
-		 INNER JOIN consumables C ON P.consumable_id = C.id
-	WHERE RC.recipe_id = $1
-	ORDER BY RC.step_no ASC
+	WHERE id = $1 AND creator_id = $2
 	`
 
 	ctx, cancel := GetDefaultTimeoutContext()
@@ -285,7 +276,7 @@ func (m RecipeModel) GetFullRecipe(ID int64) (*FullRecipe, error) {
 
 	var recipe Recipe
 
-	if err := txn.QueryRow(ctx, stmtRecipe, ID).Scan(
+	if err := txn.QueryRow(ctx, stmtRecipe, ID, userID).Scan(
 		&recipe.ID,
 		&recipe.Name,
 		&recipe.CreatorID,
@@ -302,6 +293,15 @@ func (m RecipeModel) GetFullRecipe(ID int64) (*FullRecipe, error) {
 			return nil, err
 		}
 	}
+
+	stmtComponents := `
+	SELECT RC.id, RC.recipe_id, RC.pantry_item_id, RC.created_at, RC.quantity, RC.step_no, RC.step_description, P.id, P.user_id, P.consumable_id, P.name, P.created_at, P.last_modified, C.id, C.creator_id, C.created_at, C.name, C.brand_name, C.size, C.units, C.carbs, C.fats, C.proteins, C.alcohol
+	FROM recipe_components RC 
+	     INNER JOIN pantry_items P ON RC.pantry_item_id = P.id
+		 INNER JOIN consumables C ON P.consumable_id = C.id
+	WHERE RC.recipe_id = $1
+	ORDER BY RC.step_no ASC
+	`
 
 	rows, err := txn.Query(ctx, stmtComponents, ID)
 	if err != nil {
@@ -423,7 +423,7 @@ func (m RecipeModel) InsertFullRecipe(fullRecipe *FullRecipe) error {
 	// making a whole other request to get the updated rows like this is not ideal
 	// but doing so keeps this method in line with patterns established through the rest of our models
 	// that is mutating the input model to these methods with the updated
-	newFullRecipe, err := m.GetFullRecipe(fullRecipe.Recipe.ID)
+	newFullRecipe, err := m.GetFullRecipe(fullRecipe.Recipe.ID, fullRecipe.Recipe.CreatorID)
 	if err != nil {
 		return err
 	}
@@ -527,7 +527,7 @@ func (m RecipeModel) UpdateFullRecipe(fullRecipe *FullRecipe) error {
 	// making a whole other request to get the updated rows like this is not ideal
 	// but doing so keeps this method in line with patterns established through the rest of our models
 	// that is mutating the input model to these methods with the updated
-	newFullRecipe, err := m.GetFullRecipe(fullRecipe.Recipe.ID)
+	newFullRecipe, err := m.GetFullRecipe(fullRecipe.Recipe.ID, fullRecipe.Recipe.CreatorID)
 	if err != nil {
 		return err
 	}
@@ -678,6 +678,7 @@ func (m RecipeModel) GetAllAncestors(childRecipe *Recipe, filters RecipeFilters)
 		if err != nil {
 			return nil, Metadata{}, err
 		}
+		fmt.Printf("%#v", ancestor)
 		ancestors = append(ancestors, &ancestor)
 	}
 

@@ -37,7 +37,7 @@ type IConsumedModel interface {
 	GetAllByUserIDAndDate(int64, time.Time, time.Time) ([]*Consumed, error)
 	Insert(*Consumed) error
 	Update(*Consumed) error
-	Delete(int64) error
+	Delete(int64, int64) error
 }
 
 func (m ConsumedModel) GetByConsumedID(ConsumedID int64) (*Consumed, error) {
@@ -91,7 +91,7 @@ func (m ConsumedModel) GetAllByUserID(userID int64) ([]*Consumed, error) {
 	}
 	defer rows.Close()
 
-	var allConsumed []*Consumed
+	allConsumed := []*Consumed{}
 
 	for rows.Next() {
 		var consumed Consumed
@@ -136,7 +136,7 @@ func (m ConsumedModel) GetAllByUserIDAndDate(userID int64, from time.Time, to ti
 	}
 	defer rows.Close()
 
-	var allConsumed []*Consumed
+	allConsumed := []*Consumed{}
 
 	for rows.Next() {
 		var consumed Consumed
@@ -209,7 +209,8 @@ func (m ConsumedModel) Insert(consumed *Consumed) error {
 func (m ConsumedModel) Update(consumed *Consumed) error {
 	stmt := `UPDATE consumed 
 	SET user_id = $1, recipe_id = $2, quantity = $3, carbs = $4, fats = $5, proteins = $6, alcohol = $7, consumed_at = $8, last_edited_at = current_timestamp, notes=$9
-	WHERE id = $10`
+	WHERE id = $10
+	RETURNING last_edited_at`
 
 	ctx, cancel := GetDefaultTimeoutContext()
 	defer cancel()
@@ -227,9 +228,11 @@ func (m ConsumedModel) Update(consumed *Consumed) error {
 		consumed.ID,
 	}
 
-	result, err := m.DB.Exec(ctx, stmt, args...)
+	err := m.DB.QueryRow(ctx, stmt, args...).Scan(&consumed.LastEditedAt)
 	if err != nil {
 		switch {
+		case errors.Is(err, pgx.ErrNoRows):
+			return ErrRecordNotFound
 		case strings.HasPrefix(err.Error(), "ERROR: insert or update on table \"consumed\" violates foreign key constraint \"fk_consumed_recipeid\""):
 			return ErrRecipeDoesNotExist
 		case strings.HasPrefix(err.Error(), "ERROR: insert or update on table \"consumed\" violates foreign key constraint \"fk_consumed_consumerid\""):
@@ -238,23 +241,23 @@ func (m ConsumedModel) Update(consumed *Consumed) error {
 		return err
 	}
 
-	rows := result.RowsAffected()
+	// rows := result.RowsAffected()
 
-	if rows == 0 {
-		return ErrRecordNotFound
-	}
+	// if rows == 0 {
+	// 	return ErrRecordNotFound
+	// }
 
 	return nil
 }
 
-func (m ConsumedModel) Delete(ID int64) error {
+func (m ConsumedModel) Delete(ID int64, userID int64) error {
 	stmt := `DELETE FROM consumed
-	WHERE id = $1`
+	WHERE id = $1 AND user_id = $2`
 
 	ctx, cancel := GetDefaultTimeoutContext()
 	defer cancel()
 
-	result, err := m.DB.Exec(ctx, stmt, ID)
+	result, err := m.DB.Exec(ctx, stmt, ID, userID)
 	if err != nil {
 		return err
 	}

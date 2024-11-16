@@ -76,7 +76,7 @@ func SliceEqual[T comparable](t *testing.T, actualSlice []*T, expectedSlice []*T
 		for i, expected := range expectedSlice {
 			actual := actualSlice[i]
 			if *actual != *expected {
-				t.Errorf("Mismatch of slice values at index %d. Expect: %#v, actual: %#v", i, expected, actual)
+				t.Errorf("Mismatch of slice values at index %d. Expect: %#v, Actual: %#v", i, expected, actual)
 			}
 		}
 	}

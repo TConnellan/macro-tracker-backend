@@ -33,7 +33,7 @@ type RecipeComponentModel struct {
 type IRecipeComponentModel interface {
 	Get(int64) (*RecipeComponent, error)
 	Insert(*RecipeComponent) error
-	Update(*RecipeComponent) error
+	Update(*RecipeComponent, int64) error
 }
 
 func (m RecipeComponentModel) Get(ID int64) (*RecipeComponent, error) {
@@ -105,7 +105,11 @@ func (m RecipeComponentModel) Insert(recipeComponent *RecipeComponent) error {
 	return nil
 }
 
-func (m RecipeComponentModel) Update(recipeComponent *RecipeComponent) error {
+func (m RecipeComponentModel) Update(recipeComponent *RecipeComponent, userID int64) error {
+
+	// only allow update if the recipe belongs to the user
+	checkStmt := "SELECT EXISTS(SELECT true FROM recipes WHERE id=$1 AND creator_id=$2);"
+
 	//components should be functionally immutable except for description which we will allow to change
 	//a component modified further than the description will constitute a new version of the recipe
 	//capability exposed via recipes/UpdateFullRecipe
@@ -118,7 +122,24 @@ func (m RecipeComponentModel) Update(recipeComponent *RecipeComponent) error {
 	ctx, cancel := GetDefaultTimeoutContext()
 	defer cancel()
 
-	result, err := m.DB.Exec(ctx, stmt, recipeComponent.ID, recipeComponent.StepDescription)
+	txn, err := m.DB.BeginTx(ctx, pgx.TxOptions{IsoLevel: pgx.TxIsoLevel(pgx.RepeatableRead), AccessMode: pgx.ReadWrite, DeferrableMode: pgx.NotDeferrable})
+	if err != nil {
+		return err
+	}
+
+	var exists bool
+
+	err = txn.QueryRow(ctx, checkStmt, recipeComponent.RecipeID, userID).Scan(&exists)
+	if err != nil {
+		switch {
+		case errors.Is(err, pgx.ErrNoRows):
+			return ErrRecipeDoesNotExist
+		default:
+			return err
+		}
+	}
+
+	result, err := txn.Exec(ctx, stmt, recipeComponent.ID, recipeComponent.StepDescription)
 	if err != nil {
 		return err
 	}

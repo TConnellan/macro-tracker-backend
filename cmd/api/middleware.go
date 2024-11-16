@@ -9,6 +9,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/justinas/nosurf"
 	"github.com/tconnellan/macro-tracker-backend/internal/data"
 	"github.com/tconnellan/macro-tracker-backend/internal/validator"
 	"golang.org/x/time/rate"
@@ -135,4 +136,59 @@ func (app *application) checkAuthentication(next http.Handler) http.Handler {
 		next.ServeHTTP(w, r)
 
 	})
+}
+
+func (app *application) requireUserAuthentication(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+		if app.contextGetUser(r).IsAnonymous() {
+			app.authenticationRequiredResponse(w, r)
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	})
+}
+
+var DEFAULT_SECURITY_HEADERS = map[string]string{
+	"Content-Security-Policy": "default-src 'self'; style-src 'self' fonts.googleapis.com; font-src fonts.gstatic.com",
+	"Referer-Policy":          "origin-when-cross-origin",
+	"X-Content-Type-Options":  "nosniff",
+	"X-Frame-Options":         "deny",
+	"X-XSS-Protection":        "0",
+}
+
+func secureHeaders(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		for k, v := range DEFAULT_SECURITY_HEADERS {
+			w.Header().Set(k, v)
+		}
+
+		next.ServeHTTP(w, r)
+	})
+}
+
+func (app *application) logRequest(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+		app.logger.PrintInfo("request recieved", map[string]string{
+			"address":  r.RemoteAddr,
+			"protocol": r.Proto,
+			"method":   r.Method,
+			"uri":      r.URL.RequestURI(),
+		})
+
+		next.ServeHTTP(w, r)
+	})
+}
+
+func noSurf(next http.Handler) http.Handler {
+	csrfHandler := nosurf.New(next)
+	csrfHandler.SetBaseCookie(http.Cookie{
+		HttpOnly: true,
+		Path:     "/",
+		Secure:   true,
+	})
+
+	return csrfHandler
 }

@@ -298,11 +298,13 @@ func TestRecipeComponentModelUpdate(t *testing.T) {
 		name        string
 		expectError error
 		ID          int64
+		CreatorID   int64
 		component   RecipeComponent
 	}{
 		{
 			name:        "get component existing",
 			ID:          1,
+			CreatorID:   1,
 			expectError: nil,
 			component: RecipeComponent{
 				ID:              1,
@@ -317,6 +319,7 @@ func TestRecipeComponentModelUpdate(t *testing.T) {
 		{
 			name:        "get componenent bad ID",
 			ID:          -1,
+			CreatorID:   1,
 			expectError: ErrRecordNotFound,
 			component: RecipeComponent{
 				ID:              -1,
@@ -331,6 +334,7 @@ func TestRecipeComponentModelUpdate(t *testing.T) {
 		{
 			name:        "get componenent zero ID",
 			ID:          0,
+			CreatorID:   1,
 			expectError: ErrRecordNotFound,
 			component: RecipeComponent{
 				ID:              0,
@@ -345,6 +349,7 @@ func TestRecipeComponentModelUpdate(t *testing.T) {
 		{
 			name:        "get componenent non existing ID",
 			ID:          999999999,
+			CreatorID:   1,
 			expectError: ErrRecordNotFound,
 			component: RecipeComponent{
 				ID:              999999999,
@@ -367,7 +372,7 @@ func TestRecipeComponentModelUpdate(t *testing.T) {
 			}
 			m := RecipeComponentModel{db}
 
-			err = m.Update(&tt.component)
+			err = m.Update(&tt.component, tt.CreatorID)
 
 			assert.ExpectError(t, err, tt.expectError)
 			if err != nil {

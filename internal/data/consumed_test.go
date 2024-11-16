@@ -369,9 +369,6 @@ func TestConsumedModelGetAllByUserID(t *testing.T) {
 			consumed, err := m.GetAllByUserID(tt.ID)
 
 			assert.ExpectError(t, err, tt.expectError)
-			if err != nil {
-				return
-			}
 
 			assert.SliceEqual(t, consumed, tt.expectConsumed)
 		})
@@ -603,9 +600,6 @@ func TestConsumedModelGetAllByUserIDAndDate(t *testing.T) {
 			consumed, err := m.GetAllByUserIDAndDate(tt.ID, tt.from, tt.to)
 
 			assert.ExpectError(t, err, tt.expectError)
-			if err != nil {
-				return
-			}
 
 			assert.SliceEqual(t, consumed, tt.expectConsumed)
 		})
@@ -1020,20 +1014,30 @@ func TestConsumedModelDelete(t *testing.T) {
 		name        string
 		expectError error
 		ID          int64
+		UserID      int64
 	}{
 		{
 			name:        "delete existing component no components",
 			expectError: nil,
+			UserID:      1,
 			ID:          1,
+		},
+		{
+			name:        "delete non matching userid",
+			expectError: ErrRecordNotFound,
+			ID:          1,
+			UserID:      2,
 		},
 		{
 			name:        "delete existing component invalid ID",
 			expectError: ErrRecordNotFound,
+			UserID:      1,
 			ID:          -1,
 		},
 		{
 			name:        "delete existing component non existing ID",
 			expectError: ErrRecordNotFound,
+			UserID:      1,
 			ID:          999999,
 		},
 	}
@@ -1047,7 +1051,7 @@ func TestConsumedModelDelete(t *testing.T) {
 			}
 			m := ConsumedModel{db}
 
-			err = m.Delete(tt.ID)
+			err = m.Delete(tt.ID, tt.UserID)
 
 			assert.ExpectError(t, err, tt.expectError)
 			if err != nil {

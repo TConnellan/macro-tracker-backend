@@ -41,7 +41,16 @@ func (app *application) methodNotAllowedResponse(w http.ResponseWriter, r *http.
 }
 
 func (app *application) badRequestResponse(w http.ResponseWriter, r *http.Request, err error) {
+	app.logger.PrintInfo(err.Error(), nil)
 	app.errorResponse(w, r, http.StatusBadRequest, err.Error())
+}
+
+func (app *application) forbiddenResourceResponse(w http.ResponseWriter, r *http.Request, err error) {
+	app.errorResponse(w, r, http.StatusForbidden, err.Error())
+}
+
+func (app *application) foreignKeyViolationResponse(w http.ResponseWriter, r *http.Request, err error) {
+	app.errorResponse(w, r, http.StatusConflict, err.Error())
 }
 
 func (app *application) credentialsInvalid(w http.ResponseWriter, r *http.Request) {
@@ -51,6 +60,11 @@ func (app *application) credentialsInvalid(w http.ResponseWriter, r *http.Reques
 func (app *application) invalidAuthenticationTokenResponse(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("WWW-Authenticate", "Bearer")
 	app.errorResponse(w, r, http.StatusUnauthorized, "invalid or missing authentication token")
+}
+
+func (app *application) authenticationRequiredResponse(w http.ResponseWriter, r *http.Request) {
+	message := "you must be authenticated to access this resource"
+	app.errorResponse(w, r, http.StatusUnauthorized, message)
 }
 
 func (app *application) failedValidationResponse(w http.ResponseWriter, r *http.Request, errors map[string]string) {
