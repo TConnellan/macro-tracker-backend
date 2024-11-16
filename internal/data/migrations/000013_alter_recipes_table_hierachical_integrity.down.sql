@@ -1,0 +1,1 @@
+ALTER TABLE recipes DROP CONSTRAINT ancestor_references_are_descending;
