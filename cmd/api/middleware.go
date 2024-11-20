@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net"
 	"net/http"
-	"strings"
 	"sync"
 	"time"
 
@@ -95,24 +94,13 @@ func (app *application) checkAuthentication(next http.Handler) http.Handler {
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
-		// indicate to any caches that the response may vary based on the value of the Authorization header in the request.
-		w.Header().Add("Vary", "Authorization")
+		token := app.getSessionToken(r)
 
-		authorizationHeader := r.Header.Get("Authorization")
-
-		if authorizationHeader == "" {
+		if token == "" {
 			r = app.contextSetUser(r, data.AnonymousUser)
 			next.ServeHTTP(w, r)
 			return
 		}
-
-		headerParts := strings.Split(authorizationHeader, " ")
-		if len(headerParts) != 2 || headerParts[0] != "Bearer" {
-			app.invalidAuthenticationTokenResponse(w, r)
-			return
-		}
-
-		token := headerParts[1]
 
 		v := validator.New()
 		if data.ValidateTokenPlaintext(v, token); !v.Valid() {
@@ -191,4 +179,26 @@ func noSurf(next http.Handler) http.Handler {
 	})
 
 	return csrfHandler
+}
+
+func (app *application) enableCORS(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Accept, Authorization, Content-Type")
+		w.Header().Set("Access-Control-Allow-Credentials", "true")
+
+		next.ServeHTTP(w, r)
+	})
+}
+
+func (app *application) respondCors(http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Accept, Authorization, Content-Type")
+		w.Header().Set("Access-Control-Allow-Credentials", "true")
+
+		w.WriteHeader(http.StatusOK)
+	})
 }

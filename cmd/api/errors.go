@@ -41,7 +41,6 @@ func (app *application) methodNotAllowedResponse(w http.ResponseWriter, r *http.
 }
 
 func (app *application) badRequestResponse(w http.ResponseWriter, r *http.Request, err error) {
-	app.logger.PrintInfo(err.Error(), nil)
 	app.errorResponse(w, r, http.StatusBadRequest, err.Error())
 }
 
@@ -58,7 +57,7 @@ func (app *application) credentialsInvalid(w http.ResponseWriter, r *http.Reques
 }
 
 func (app *application) invalidAuthenticationTokenResponse(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("WWW-Authenticate", "Bearer")
+	app.responseClearTokenCookie(w)
 	app.errorResponse(w, r, http.StatusUnauthorized, "invalid or missing authentication token")
 }
 
