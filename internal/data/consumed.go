@@ -41,7 +41,7 @@ type IConsumedModel interface {
 }
 
 func (m ConsumedModel) GetByConsumedID(ConsumedID int64) (*Consumed, error) {
-	stmt := `SELECT id, user_id, recipe_id, quantity, carbs, fats, proteins, alcohol, consumed_at, created_at, last_edited_at, notes
+	stmt := `SELECT id, user_id, COALESCE(recipe_id, 0), quantity, carbs, fats, proteins, alcohol, consumed_at, created_at, last_edited_at, notes
 	FROM consumed
 	WHERE id = $1`
 
@@ -78,7 +78,7 @@ func (m ConsumedModel) GetByConsumedID(ConsumedID int64) (*Consumed, error) {
 }
 
 func (m ConsumedModel) GetAllByUserID(userID int64) ([]*Consumed, error) {
-	stmt := `SELECT id, user_id, recipe_id, quantity, carbs, fats, proteins, alcohol, consumed_at, created_at, last_edited_at, notes
+	stmt := `SELECT id, user_id, COALESCE(recipe_id, 0), quantity, carbs, fats, proteins, alcohol, consumed_at, created_at, last_edited_at, notes
 	FROM consumed
 	WHERE user_id = $1`
 
@@ -123,9 +123,10 @@ func (m ConsumedModel) GetAllByUserID(userID int64) ([]*Consumed, error) {
 }
 
 func (m ConsumedModel) GetAllByUserIDAndDate(userID int64, from time.Time, to time.Time) ([]*Consumed, error) {
-	stmt := `SELECT id, user_id, recipe_id, quantity, carbs, fats, proteins, alcohol, consumed_at, created_at, last_edited_at, notes
+	stmt := `SELECT id, user_id, COALESCE(recipe_id, 0), quantity, carbs, fats, proteins, alcohol, consumed_at, created_at, last_edited_at, notes
 	FROM consumed
-	WHERE user_id = $1 AND consumed_at >= $2 and consumed_at <= $3`
+	WHERE user_id = $1 AND consumed_at >= $2 and consumed_at <= $3
+	ORDER BY consumed_at ASC;`
 
 	ctx, cancel := GetDefaultTimeoutContext()
 	defer cancel()
@@ -175,9 +176,16 @@ func (m ConsumedModel) Insert(consumed *Consumed) error {
 	ctx, cancel := GetDefaultTimeoutContext()
 	defer cancel()
 
+	var actualRecipeID *int64
+	if consumed.RecipeID == 0 {
+		actualRecipeID = nil
+	} else {
+		actualRecipeID = &consumed.RecipeID
+	}
+
 	args := []any{
 		consumed.UserID,
-		consumed.RecipeID,
+		actualRecipeID,
 		consumed.Quantity,
 		consumed.Macros.Carbs,
 		consumed.Macros.Fats,
