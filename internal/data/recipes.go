@@ -31,10 +31,10 @@ func ValidateRecipe(v *validator.Validator, recipe *Recipe) {
 // }
 
 type FullRecipe struct {
-	Recipe           Recipe
-	RecipeComponents []*RecipeComponent
-	PantryItems      []*PantryItem
-	Consumables      []*Consumable
+	Recipe           Recipe             `json:"recipe"`
+	RecipeComponents []*RecipeComponent `json:"recipe_components"`
+	PantryItems      []*PantryItem      `json:"pantry_items"`
+	Consumables      []*Consumable      `json:"consumables"`
 }
 
 func ValidateComponentConsumableList(v *validator.Validator, recipeID int64, recipeComponents []*RecipeComponent, pantryItems []*PantryItem, consumables []*Consumable) {

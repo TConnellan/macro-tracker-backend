@@ -11,6 +11,17 @@ import (
 	"github.com/tconnellan/macro-tracker-backend/internal/validator"
 )
 
+type RecipeStep struct {
+	RecipeComponent data.RecipeComponent `json:"recipe_step"`
+	PantryItem      data.PantryItem      `json:"pantry_item"`
+	Consumable      data.Consumable      `json:"consumable"`
+}
+
+type RecipeStepsResponse struct {
+	Recipe      data.Recipe  `json:"recipe"`
+	RecipeSteps []RecipeStep `json:"recipe_steps"`
+}
+
 func (app *application) listRecipes(w http.ResponseWriter, r *http.Request) {
 
 	v := validator.New()
@@ -76,7 +87,22 @@ func (app *application) getRecipe(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = app.writeJSON(w, http.StatusOK, envelope{"fullrecipes": fullRecipes}, nil)
+	recipeSteps := RecipeStepsResponse{
+		Recipe:      fullRecipes.Recipe,
+		RecipeSteps: []RecipeStep{},
+	}
+	for i, _ := range fullRecipes.RecipeComponents {
+		recipeComponent := fullRecipes.RecipeComponents[i]
+		pantryItem := fullRecipes.PantryItems[i]
+		consumable := fullRecipes.Consumables[i]
+		recipeSteps.RecipeSteps = append(recipeSteps.RecipeSteps, RecipeStep{
+			RecipeComponent: *recipeComponent,
+			PantryItem:      *pantryItem,
+			Consumable:      *consumable,
+		})
+	}
+
+	err = app.writeJSON(w, http.StatusOK, envelope{"recipesteps": recipeSteps}, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}
