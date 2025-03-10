@@ -11,7 +11,7 @@ import (
 
 func (app *application) registerUserHandler(w http.ResponseWriter, r *http.Request) {
 	var input struct {
-		Name     string `json:"name"`
+		Username string `json:"username"`
 		Email    string `json:"email"`
 		Password string `json:"password"`
 	}
@@ -22,21 +22,23 @@ func (app *application) registerUserHandler(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
+	v := validator.New()
+	data.ValidatePasswordPlaintext(v, input.Password)
+	data.ValidateEmail(v, input.Email)
+
+	if !v.Valid() {
+		app.failedValidationResponse(w, r, v.Errors)
+		return
+	}
+
 	user := &data.User{
-		Username: input.Name,
+		Username: input.Username,
 		Email:    input.Email,
 	}
 
 	err = user.Password.Set(input.Password)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
-		return
-	}
-
-	v := validator.New()
-
-	if data.ValidateUser(v, user); !v.Valid() {
-		app.failedValidationResponse(w, r, v.Errors)
 		return
 	}
 
@@ -103,7 +105,9 @@ func (app *application) UserLoginHandler(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	err = app.writeJSON(w, http.StatusCreated, envelope{"token": token}, nil)
+	app.responseSetTokenCookie(w, token.Plaintext)
+
+	err = app.writeJSON(w, http.StatusCreated, envelope{"user": user}, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}
