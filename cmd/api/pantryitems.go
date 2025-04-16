@@ -33,7 +33,9 @@ func (app *application) createPantryItem(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	pantryItem.ID = app.contextGetUser(r).ID
+	pantryItem.UserID = app.contextGetUser(r).ID
+
+	// app.logger.PrintInfo(strconv.FormatInt(pantryItem.ID, 10), nil)
 
 	v := validator.New()
 	data.ValidatePantryItem(v, &pantryItem)

@@ -447,7 +447,7 @@ func insertFullRecipe(fullRecipe *FullRecipe, db psqlDB) error {
 		[]string{"recipe_id", "pantry_item_id", "quantity", "step_no", "step_description"},
 		pgx.CopyFromSlice(len(fullRecipe.RecipeComponents), func(i int) ([]any, error) {
 			return []any{
-				fullRecipe.RecipeComponents[i].RecipeID,
+				fullRecipe.Recipe.ID,
 				fullRecipe.RecipeComponents[i].PantryItemID,
 				fullRecipe.RecipeComponents[i].Quantity,
 				fullRecipe.RecipeComponents[i].StepNo,

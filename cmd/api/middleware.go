@@ -183,7 +183,7 @@ func noSurf(next http.Handler) http.Handler {
 
 func (app *application) enableCORS(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
+		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:5173")
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 		w.Header().Set("Access-Control-Allow-Headers", "Accept, Authorization, Content-Type")
 		w.Header().Set("Access-Control-Allow-Credentials", "true")
@@ -192,13 +192,23 @@ func (app *application) enableCORS(next http.Handler) http.Handler {
 	})
 }
 
-func (app *application) respondCors(http.Handler) http.Handler {
+func (app *application) respondCors(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
+		// Set CORS headers
+		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:5173")
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 		w.Header().Set("Access-Control-Allow-Headers", "Accept, Authorization, Content-Type")
 		w.Header().Set("Access-Control-Allow-Credentials", "true")
 
-		w.WriteHeader(http.StatusOK)
+		// If it's a preflight request, respond with 200 and return
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+
+		// Otherwise, continue to the next handler
+		if next != nil {
+			next.ServeHTTP(w, r)
+		}
 	})
 }

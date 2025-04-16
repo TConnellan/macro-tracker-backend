@@ -28,7 +28,7 @@ func (app *application) routes() http.Handler {
 	router.Handler(http.MethodPost, "/api/v1/consumed", protectedMiddleware.ThenFunc(app.postConsumed))
 	router.Handler(http.MethodPut, "/api/v1/consumed", protectedMiddleware.ThenFunc(app.updateConsumed))
 	router.Handler(http.MethodDelete, "/api/v1/consumed/:id", protectedMiddleware.ThenFunc(app.deleteConsumed))
-	router.Handler(http.MethodOptions, "/api/v1/consumed", protectedMiddleware.Then(app.respondCors(nil)))
+	router.Handler(http.MethodOptions, "/api/v1/consumed", standardMiddleware.Then(app.respondCors(nil)))
 
 	router.Handler(http.MethodGet, "/api/v1/recipes", protectedMiddleware.ThenFunc(app.listRecipes))
 	router.Handler(http.MethodGet, "/api/v1/recipes/:id", protectedMiddleware.ThenFunc(app.getRecipe))
@@ -38,19 +38,22 @@ func (app *application) routes() http.Handler {
 	// allow update of modifiable parts of step
 	router.Handler(http.MethodPut, "/api/v1/recipes/:id/step", protectedMiddleware.ThenFunc(app.updateStep))
 	router.Handler(http.MethodGet, "/api/v1/recipes/:id/ancestors", protectedMiddleware.ThenFunc(app.getAncestors))
+	router.Handler(http.MethodOptions, "/api/v1/recipes", standardMiddleware.Then(app.respondCors(nil)))
 
 	// consumables
 	router.Handler(http.MethodGet, "/api/v1/consumable/personal", protectedMiddleware.ThenFunc(app.getUserConsumables))
-	// router.Handler(http.MethodGet, "/v1/consumable/:id", protectedMiddleware.ThenFunc(app.getConsumable))
+	// router.Handler(http.MethodGet, "/api/v1/consumable/:id", protectedMiddleware.ThenFunc(app.getConsumable))
 	router.Handler(http.MethodGet, "/api/v1/consumable/search", protectedMiddleware.ThenFunc(app.searchConsumables))
 	router.Handler(http.MethodPost, "/api/v1/consumable", protectedMiddleware.ThenFunc(app.createConsumable))
 	router.Handler(http.MethodPut, "/api/v1/consumable/:id", protectedMiddleware.ThenFunc(app.updateConsumable))
+	router.Handler(http.MethodOptions, "/api/v1/consumable", standardMiddleware.Then(app.respondCors(nil)))
 
 	// pantry items
-	router.Handler(http.MethodGet, "/v1/pantryitems", protectedMiddleware.ThenFunc(app.getPantryItems))
-	router.Handler(http.MethodPost, "/v1/pantryitems", protectedMiddleware.ThenFunc(app.createPantryItem))
-	router.Handler(http.MethodPut, "/v1/pantryitems", protectedMiddleware.ThenFunc(app.updatePantryItem))
-	router.Handler(http.MethodDelete, "/v1/pantryitems/:id", protectedMiddleware.ThenFunc(app.deletePantryItem))
+	router.Handler(http.MethodGet, "/api/v1/pantryitems", protectedMiddleware.ThenFunc(app.getPantryItems))
+	router.Handler(http.MethodPost, "/api/v1/pantryitems", protectedMiddleware.ThenFunc(app.createPantryItem))
+	router.Handler(http.MethodPut, "/api/v1/pantryitems", protectedMiddleware.ThenFunc(app.updatePantryItem))
+	router.Handler(http.MethodDelete, "/api/v1/pantryitems/:id", protectedMiddleware.ThenFunc(app.deletePantryItem))
+	router.Handler(http.MethodOptions, "/api/v1/pantryitems", standardMiddleware.Then(app.respondCors(nil)))
 
 	return standardMiddleware.Then(router)
 }

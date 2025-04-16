@@ -15,7 +15,7 @@ type RecipeComponent struct {
 	RecipeID        int64     `json:"recipe_id"`
 	PantryItemID    int64     `json:"pantry_item_id"`
 	CreatedAt       time.Time `json:"created_at"`
-	Quantity        int64     `json:"quantity"`
+	Quantity        float64   `json:"quantity"`
 	StepNo          int64     `json:"step_no"`
 	StepDescription string    `json:"step_description"`
 }

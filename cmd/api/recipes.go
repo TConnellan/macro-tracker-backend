@@ -158,12 +158,29 @@ func (app *application) createChildRecipe(w http.ResponseWriter, r *http.Request
 }
 
 func (app *application) createNewRecipe(w http.ResponseWriter, r *http.Request) {
-	var fullRecipe data.FullRecipe
 
-	err := app.readJSON(w, r, &fullRecipe)
+	var recipePayload RecipeStepsResponse
+
+	err := app.readJSON(w, r, &recipePayload)
 	if err != nil {
 		app.badRequestResponse(w, r, err)
 		return
+	}
+
+	var components []*data.RecipeComponent
+	var consumables []*data.Consumable
+	var pantryItems []*data.PantryItem
+	for _, val := range recipePayload.RecipeSteps {
+		components = append(components, &val.RecipeComponent)
+		consumables = append(consumables, &val.Consumable)
+		pantryItems = append(pantryItems, &val.PantryItem)
+	}
+
+	var fullRecipe = data.FullRecipe{
+		Recipe:           recipePayload.Recipe,
+		RecipeComponents: components,
+		PantryItems:      pantryItems,
+		Consumables:      consumables,
 	}
 
 	fullRecipe.Recipe.CreatorID = app.contextGetUser(r).ID
