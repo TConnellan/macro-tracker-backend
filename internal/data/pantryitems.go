@@ -38,7 +38,7 @@ type IPantryItemModel interface {
 func (m PantryItemModel) GetAllByUserID(userID int64) ([]*PantryItem, error) {
 
 	stmt := `
-	SELECT id, user_id, consumable_id, name, created_at, last_edited_at
+	SELECT id, user_id, consumable_id, name, created_at, last_modified
 	FROM pantry_items
 	WHERE user_id = $1
 	`
@@ -88,7 +88,7 @@ func (m PantryItemModel) Get(ID int64) (*PantryItem, error) {
 func get(ID int64, db psqlDB) (*PantryItem, error) {
 
 	stmt := `
-	SELECT id, user_id, consumable_id, name, created_at, last_edited_at
+	SELECT id, user_id, consumable_id, name, created_at, last_modified
 	FROM pantry_items
 	WHERE id = $1
 	`
@@ -127,7 +127,7 @@ func create(pantryItem *PantryItem, db psqlDB) error {
 	stmt := `
 	INSERT INTO pantry_items(user_id, consumable_id, name)
 	VALUES ($1, $2, $3)
-	RETURNING id, created_at, last_edited_at
+	RETURNING id, created_at, last_modified
 	`
 
 	ctx, cancel := GetDefaultTimeoutContext()
@@ -154,7 +154,7 @@ func updatepantryItem(pantryItem *PantryItem, db psqlDB) error {
 	UPDATE TABLE pantry_items
 	SET name = $2, consumable_id = $3
 	WHERE id = $1
-	RETURING id, user_id, consumable_id, name, created_at, last_edited_at
+	RETURNING id, user_id, consumable_id, name, created_at, last_modified
 	`
 
 	ctx, cancel := GetDefaultTimeoutContext()

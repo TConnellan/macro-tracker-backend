@@ -122,7 +122,7 @@ func (app *application) searchConsumables(w http.ResponseWriter, r *http.Request
 
 func (app *application) createConsumable(w http.ResponseWriter, r *http.Request) {
 	var consumable data.Consumable
-	err := app.readJSON(w, r, consumable)
+	err := app.readJSON(w, r, &consumable)
 	if err != nil {
 		app.badRequestResponse(w, r, err)
 		return

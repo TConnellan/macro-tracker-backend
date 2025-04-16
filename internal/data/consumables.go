@@ -18,6 +18,10 @@ var (
 	ValidMeasurementUnits = []MeasurementUnit{
 		"g",
 		"ml",
+		"units",
+		"servings",
+		"oz",
+		"lb",
 	}
 )
 
