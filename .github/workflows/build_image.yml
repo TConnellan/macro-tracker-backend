@@ -26,7 +26,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: set vars
-        is: image_naming
+        id: image_naming
         run: |
           reponame=$(echo ${{ github.repository_owner }} | tr '[:upper:]' '[:lower:]')
           echo "imagename=ghcr.io/${reponame}/macrotracker-api:latest" >> $GITHUB_ENV
@@ -42,6 +42,6 @@ jobs:
   
   deploy:
     needs: build-and-push 
-    uses: ${{ github.repository }}/.github/workflows/deploy_image.yml@main
+    uses: TConnellan/macro-tracker-backend/.github/workflows/deploy_image.yml@main
     with:
       environment: prod
