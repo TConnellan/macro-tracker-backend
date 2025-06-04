@@ -1,0 +1,59 @@
+name: Build and Publish to GHCR
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: 'A username passed from the caller workflow'
+        options:
+          - dev
+          - staging
+          - prod
+        required: true
+        type: choice
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    steps:
+        
+      - name: Install AWS CLI
+        uses: aws-actions/setup-cli@v2
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-southeast-2
+
+      - name: Get EC2 instance ID by tag
+        id: get_instance_id
+        run: |
+          INSTANCE_ID=$(aws ec2 describe-instances \
+            --filters "Name=tag:Name,Values=macrotracker-api-instance" \
+                      "Name=instance-state-name,Values=running" \
+                      "Name=tag:Environment,Values=${{ inputs.environment }}"
+            --query "Reservations[].Instances[].InstanceId" \
+            --output text)
+          echo "instance_id=$INSTANCE_ID" >> $GITHUB_OUTPUT
+
+      - name: Pull and run Docker image on EC2
+        run: |
+          aws ssm send-command \
+            --document-name "AWS-RunShellScript" \
+            --targets "Key=instanceIds,Values=${{ steps.get_instance_id.outputs.instance_id }}" \
+            --comment "Pull latest Docker image and run container" \
+            --parameters 'commands=[
+              "docker login ghcr.io -u ${{ github.actor }} --password ${{ secrets.GITHUB_TOKEN }}",
+              "docker pull ${{ inputs.imagename }}",
+              "docker stop macrotracker || true",
+              "docker rm macrotracker || true",
+              "docker run -d --name macrotracker -p 80:8080 -e MACROTRACKER_DB_DSN=${{ secrets.MACROTRACKER_DB_DSN }} ${{ inputs.imagename}}"
+            ]' \
+            --region ap-southeast-2
