@@ -4,13 +4,9 @@ on:
   workflow_call:
     inputs:
       environment:
-        description: 'A username passed from the caller workflow'
-        options:
-          - dev
-          - staging
-          - prod
+        description: 'Deployment environment (dev, staging, prod)'
         required: true
-        type: choice
+        type: string
 
 permissions:
   contents: read
