@@ -1,0 +1,56 @@
+name: Build and Publish to GHCR
+
+on:
+  push:
+    branches: [ main ]  # Or your default branch
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: set vars
+        run: echo "imagename=ghcr.io/${{ github.repository_owner }}/macrotracker-api:latest" >> $GITHUB_ENV
+
+      - name: Build Docker image
+        run: |
+          docker build -t ${imagename} .
+
+      - name: Push Docker image to GHCR
+        run: |
+          docker push ${imagename}
+        
+      # - name: Install AWS CLI
+      #   uses: aws-actions/setup-cli@v2
+
+      # # Run command on EC2 via SSM to pull and run the image
+      # - name: Pull and run Docker image on EC2
+      #   env:
+      #     INSTANCE_ID: i-xxxxxxxxxxxxxxxxx # Replace with your EC2 instance ID
+      #   run: |
+      #     aws ssm send-command \
+      #       --document-name "AWS-RunShellScript" \
+      #       --targets "Key=instanceIds,Values=$INSTANCE_ID" \
+      #       --comment "Pull latest Docker image and run container" \
+      #       --parameters 'commands=[
+      #         "docker login ghcr.io -u ${{ github.actor }} --password ${{ secrets.GITHUB_TOKEN }}",
+      #         "docker pull ghcr.io/${{ github.repository_owner }}/macrotracker-api:latest",
+      #         "docker stop macrotracker || true",
+      #         "docker rm macrotracker || true",
+      #         "docker run -d --name macrotracker -p 80:8080 -e MACROTRACKER_DB_DSN=${{ secrets.MACROTRACKER_DB_DSN }} ghcr.io/${{ github.repository_owner }}/macrotracker-api:latest"
+      #       ]' \
+      #       --region ap-southeast-2
