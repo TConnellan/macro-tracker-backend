@@ -46,3 +46,4 @@ jobs:
     uses: TConnellan/macro-tracker-backend/.github/workflows/deploy_image.yml@main
     with:
       environment: prod
+    secrets: inherit
