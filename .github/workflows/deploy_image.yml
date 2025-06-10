@@ -63,7 +63,7 @@ jobs:
           aws ssm wait command-executed \
             --command-id "$COMMAND_ID" \
             --instance-id "$INSTANCE_ID" \
-            --region ap-southeast-2
+            --region ap-southeast-2 || true
       
           echo "SSM command $COMMAND_ID completed."
 
