@@ -46,4 +46,5 @@ jobs:
     uses: TConnellan/macro-tracker-backend/.github/workflows/deploy_image.yml@main
     with:
       environment: prod
+      imagename: ${{ jobs.build-and-push.outputs.imagename }}
     secrets: inherit
