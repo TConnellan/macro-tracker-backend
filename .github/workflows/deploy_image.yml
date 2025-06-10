@@ -18,8 +18,8 @@ jobs:
     environment: ${{ inputs.environment }}
     steps:
         
-      - name: Install AWS CLI
-        uses: aws-actions/setup-cli@v2
+      # - name: Install AWS CLI
+      #   uses: aws-actions/setup-cli@v2
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
