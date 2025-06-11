@@ -48,18 +48,19 @@ jobs:
       - name: Pull and run Docker image on EC2
         run: |
           INSTANCE_ID=${{ steps.get_instance_id.outputs.instance_id }}
+          IMAGE_NAME_SHORT=$(echo ${{ inputs.imagename }}| sed 's/.*\///' | sed 's/:.*$//')
       
           COMMAND_ID=$(aws ssm send-command \
             --document-name "AWS-RunShellScript" \
             --targets "Key=instanceIds,Values=$INSTANCE_ID" \
             --comment "Pull latest Docker image and run container" \
-            --parameters 'commands=[
-              "docker login ghcr.io -u ${{ github.actor }} --password ${{ secrets.GITHUB_TOKEN }}",
-              "docker pull ${{ inputs.imagename }}",
-              "docker stop macrotracker || true",
-              "docker rm macrotracker || true",
-              "docker run -d --name macrotracker -p 80:8080 -e MACROTRACKER_DB_DSN=${{ secrets.MACROTRACKER_DB_DSN }} ${{ inputs.imagename }}"
-            ]' \
+            --parameters "commands=[
+              \"docker login ghcr.io -u ${{ github.actor }} --password ${{ secrets.GITHUB_TOKEN }}\",
+              \"docker pull ${{ inputs.imagename }}\",
+              \"docker stop ${IMAGE_NAME_SHORT} || true\",
+              \"docker rm ${IMAGE_NAME_SHORT} || true\",
+              \"docker run -d --name ${IMAGE_NAME_SHORT} -p 80:8080 -e MACROTRACKER_DB_DSN=${{ secrets.MACROTRACKER_DB_DSN }} ${{ inputs.imagename }}\"
+            ]" \
             --region ap-southeast-2 \
             --query "Command.CommandId" \
             --output text)
